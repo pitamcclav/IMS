@@ -82,7 +82,7 @@ class RequestController extends Controller
 
         return redirect()->route('requests.index')->with('success', 'Request added successfully.');
     }
-    
+
     public function updateStatus(Request $request, $inventoryRequest)
     {
         $request->validate([
