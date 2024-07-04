@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 
 class CategoryController extends Controller
 {
@@ -27,7 +28,9 @@ class CategoryController extends Controller
 
         Category::create($request->all());
 
-        return redirect()->route('categories.index')->with('success', 'Category added successfully.');
+        Session::flash('success', 'Category added successfully.');
+
+        return redirect()->route('categories.index');
     }
 
     public function edit(Category $category)
@@ -44,7 +47,9 @@ class CategoryController extends Controller
 
         $category->update($request->all());
 
-        return redirect()->route('categories.index')->with('success', 'Category updated successfully.');
+        Session::flash('success', 'Category updated successfully.');
+
+        return redirect()->route('categories.index');
     }
 
     public function destroy(Category $category)

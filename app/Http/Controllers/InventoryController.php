@@ -12,13 +12,14 @@ use App\Models\Supply;
 use Carbon\Carbon;
 use Carbon\Traits\Date;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 
 class InventoryController extends Controller
 {
     public function index()
     {
         // Eager load related models
-        $inventories = Inventory::with(['item', 'colour', 'size'])->get();
+        $inventories = Inventory::with(['item', 'colour', 'size'])->paginate(10);
 //        print($inventories);
         return view('manager.inventory.index', compact('inventories'));
     }
@@ -26,79 +27,96 @@ class InventoryController extends Controller
     public function create()
     {
         $items = Item::all();
-        $colors = Colour::all();
+        $colours = Colour::all();
         $sizes = Size::all();
         $suppliers = Supplier::all();
         $categories = Category::all();
-        return view('manager.inventory.create', compact('items', 'colors', 'sizes','suppliers','categories'));
+        return view('manager.inventory.create', compact('items', 'colours', 'sizes','suppliers','categories'));
     }
 
     public function store(Request $request)
     {
-        print($request);
+        print_r($request->all());
 
         $request->validate([
             'itemid' => 'required',
-            'colourid' => 'required',
-            'sizeid' => 'required',
-            'quantity' => 'required|integer',
+            'colourIds' => 'required|array',
+            'sizeIds' => 'required|array',
+            'quantities' => 'required|array',
         ]);
 
+        // Find the category and store of the item
         $item = Item::find($request->itemid);
         $category = $item->category;
         $storeId = $category->storeId;
 
+        \DB::transaction(function () use ($request, $storeId) {
+            for ($i = 0; $i < count($request->colourIds); $i++) {
+                $inventory = Inventory::where('itemId', $request->itemid)
+                    ->where('colourId', $request->colourIds[$i])
+                    ->where('sizeId', $request->sizeIds[$i])
+                    ->first();
 
-        // Find the existing inventory item or create a new one
-        $inventory = Inventory::where('itemid', $request->itemid)
-            ->where('colourid', $request->colourid)
-            ->where('sizeid', $request->sizeid)
-            ->first();
+                if ($inventory) {
+                    $inventory->quantity += $request->quantities[$i];
+                    $inventory->initialQuantity = $inventory->quantity;
+                } else {
+                    $inventory = Inventory::create([
+                        'itemId' => $request->itemid,
+                        'colourId' => $request->colourIds[$i],
+                        'sizeId' => $request->sizeIds[$i],
+                        'quantity' => $request->quantities[$i],
+                        'initialQuantity' => $request->quantities[$i],
+                        'storeId' => $storeId,
+                    ]);
+                }
 
-        if ($inventory) {
-            // Update the existing inventory item
-            $inventory->quantity += $request->quantity;
-            $inventory->initialQuantity = $inventory->quantity;
-        } else {
-            // Create a new inventory item
-            $inventory = Inventory::create([
-                'itemId' => $request->itemid,
-                'colourId' => $request->colourid,
-                'sizeId' => $request->sizeid,
-                'quantity' => $request->quantity,
-                'initialQuantity' => $request->quantity,
-                'storeId' => $storeId,
-            ]);
-        }
+                $inventory->save();
+            }
+        });
 
-        $inventory->save();
+        $quantity = $request->quantities;
 
+//        Fill supply table
         Supply::create([
-            'supplierId'=>$request->supplierid,
-            'itemId'=>$request->itemid,
-            'supplyDate'=>Carbon::now(),
-            'quantity'=>$request->quantity,
+            'itemId' => $request->itemid,
+            'supplierId' => $request->supplierid,
+            'quantity' => array_sum($quantity),
+            'supplyDate' => Carbon::now(),
         ]);
 
-        return redirect()->route('inventory.index')->with('success', 'Inventory item added successfully.');
+        Session::flash('success', 'Inventory item added successfully.');
+
+        return redirect()->route('inventory.index');
     }
 
     public function storeColor(Request $request)
     {
-        $color = Colour::create([
-            'colourName' => $request->colorName,
-        ]);
+        if(Colour::where('colourName', $request->colorName)->exists()){
+            return response()->json(['success' => false, 'message' => 'Color already exists']);
+        }
+        else{
+            $colour = Colour::create([
+                'colourName' => $request->colorName,
+            ]);
 
-        return response()->json(['success' => true, 'color' => $color]);
+            return response()->json(['success' => true, 'colour' => $colour]);
+        }
     }
 
     public function storeSize(Request $request)
     {
-        $size = Size::create([
-            'sizeValue' => $request->sizeValue,
-        ]);
+        if (Size::where('sizeValue', $request->sizeValue)->exists()){
+            return response()->json(['success' => false, 'message' => 'Size already exists']);
+        }
+        else{
+            $size = Size::create([
+                'sizeValue' => $request->sizeValue,
+            ]);
 
-        return response()->json(['success' => true, 'size' => $size]);
+            return response()->json(['success' => true, 'size' => $size]);
+        }
+
     }
 
 

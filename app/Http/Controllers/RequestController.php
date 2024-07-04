@@ -12,12 +12,13 @@ use App\Models\Staff;
 use App\Models\Category;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 
 class RequestController extends Controller
 {
     public function index()
     {
-        $requests = InventoryRequest::with(['staff'])->get();
+        $requests = InventoryRequest::with(['staff'])->paginate(10);
         return view('manager.request.index', compact('requests'));
     }
 
@@ -32,14 +33,6 @@ class RequestController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'staffId' => 'required',
-            'itemIds' => 'required|array',
-            'quantities' => 'required|array',
-            'colourIds' => 'required|array',
-            'sizeIds' => 'required|array',
-        ]);
-
         // Fetch the storeId based on the selected items
         $storeId = null;
         foreach ($request->itemIds as $itemId) {
@@ -60,28 +53,31 @@ class RequestController extends Controller
             return redirect()->back()->withErrors(['error' => 'Invalid items selected.']);
         }
 
-        $data = [
-            'date' => Carbon::now(),
-            'status' => 'pending',
-            'staffId' => $request->staffId,
-            'storeId' => $storeId,
-        ];
+        \DB::transaction(function () use ($request, $storeId) {
+            $data = [
+                'date' => Carbon::now(),
+                'status' => 'pending',
+                'staffId' => $request->staffId,
+                'storeId' => $storeId,
+            ];
 
-        $inventoryRequest = InventoryRequest::create($data);
+            $inventoryRequest = InventoryRequest::create($data);
 
-        // Handle the request details
-        foreach ($request->itemIds as $index => $itemId) {
-            RequestDetail::create([
-                'requestId' => $inventoryRequest->requestId,
-                'itemId' => $itemId,
-                'quantity' => $request->quantities[$index],
-                'colourId' => $request->colourIds[$index],
-                'sizeId' => $request->sizeIds[$index],
-            ]);
-        }
+            // Handle the request details
+            foreach ($request->itemIds as $index => $itemId) {
+                RequestDetail::create([
+                    'requestId' => $inventoryRequest->requestId,
+                    'itemId' => $itemId,
+                    'quantity' => $request->quantities[$index],
+                    'colourId' => $request->colourIds[$index],
+                    'sizeId' => $request->sizeIds[$index],
+                ]);
+            }
+        });
 
         return redirect()->route('requests.index')->with('success', 'Request added successfully.');
     }
+
 
     public function updateStatus(Request $request, $inventoryRequest)
     {
@@ -107,7 +103,8 @@ class RequestController extends Controller
                     $inventory->save();
                 } else {
                     // Handle case where the inventory item is not found (optional)
-                    return redirect()->route('requests.index')->with('error', 'Inventory item not found.');
+                    Session::flash('error', 'Inventory item not found.');
+                    return redirect()->route('requests.index');
                 }
             }
         }
@@ -115,7 +112,9 @@ class RequestController extends Controller
         // Update the request status
         $inventoryRequest->update(['status' => $request->status]);
 
-        return redirect()->route('requests.index')->with('success', 'Request status updated successfully.');
+        Session::flash('success', 'Request status updated successfully.');
+
+        return redirect()->route('requests.index');
     }
 
     public function edit(InventoryRequest $request)
@@ -151,12 +150,15 @@ class RequestController extends Controller
             ]);
         }
 
-        return redirect()->route('requests.index')->with('success', 'Request updated successfully.');
+        Session::flash('success', 'Request updated successfully.');
+        return redirect()->route('requests.index');
     }
 
     public function destroy(InventoryRequest $request)
     {
         $request->delete();
-        return redirect()->route('requests.index')->with('success', 'Request deleted successfully.');
+
+        Session::flash('success', 'Request deleted successfully.');
+        return redirect()->route('requests.index');
     }
 }

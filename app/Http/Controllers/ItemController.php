@@ -10,7 +10,7 @@ class ItemController extends Controller
 {
     public function index()
     {
-        $items = Item::all();
+        $items = Item::with('inventory')->paginate(10);
         return view('manager.item.index', compact('items'));
     }
 

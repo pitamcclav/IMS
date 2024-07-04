@@ -91,14 +91,51 @@
                                         </div>
                                     </div>
                                 </div>
+                                <!-- Modal for Viewing Request Details -->
+                                <div class="modal fade" id="viewRequestModal{{ $request->requestId }}" tabindex="-1" role="dialog" aria-labelledby="viewRequestModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="viewRequestModalLabel">Request Details</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p><strong>Date:</strong> {{ $request->date }}</p>
+                                                <p><strong>Status:</strong> {{ $request->status }}</p>
+                                                <p><strong>Staff:</strong> {{ $request->staff->staffName ?? 'N/A' }}</p>
+                                                <h5>Request Details</h5>
+                                                <ul>
+                                                    @foreach ($request->requestDetails as $detail)
+                                                        <li>
+                                                            <strong>Item:</strong> {{ $detail->item->itemName }} <br>
+                                                            <strong>Quantity:</strong> {{ $detail->quantity }} <br>
+                                                            <strong>Color:</strong> {{ $detail->color->colourName }} <br>
+                                                            <strong>Size:</strong> {{ $detail->size->sizeValue }}
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             @endforeach
                             </tbody>
                         </table>
+                    </div>
+
+                    <div class="mt-3">
+                        {{ $requests->links('vendor.pagination.bootstrap-5') }}
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+
+
 @endsection
 
 @push('scripts')

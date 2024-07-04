@@ -10,7 +10,7 @@ class SupplierController extends Controller
 {
     public function index()
     {
-        $suppliers = Supplier::all();
+        $suppliers = Supplier::with('supply.item')->get();
         return view('manager.supplier.index', compact('suppliers'));
     }
 

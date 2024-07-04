@@ -25,3 +25,4 @@ Route::resource('report', ReportController::class);
 Route::patch('/requests/{request}/update-status', [RequestController::class, 'updateStatus'])->name('requests.updateStatus');
 Route::post('/api/colour', [InventoryController::class, 'storeColor']);
 Route::post('/api/size', [InventoryController::class, 'storeSize']);
+

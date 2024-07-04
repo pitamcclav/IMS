@@ -1,30 +1,29 @@
 document.addEventListener('DOMContentLoaded', function () {
-    // Open modal when 'New' option is selected
-    document.querySelector('select[name="supplierid"]').addEventListener('change', function (e) {
+    "use strict";
+
+    // Function to open the respective modal
+    function openModal(modalId) {
+        new bootstrap.Modal(document.getElementById(modalId)).show();
+    }
+
+    // Delegate event listener for 'New' option in select elements
+    document.addEventListener('change', function (e) {
         if (e.target.value === 'new') {
-            new bootstrap.Modal(document.getElementById('newSupplierModal')).show();
+            if (e.target.name === 'supplierid') {
+                openModal('newSupplierModal');
+            } else if (e.target.name === 'itemid') {
+                openModal('newItemModal');
+            } else if (e.target.name === 'sizeIds[]') {
+                openModal('newSizeModal');
+            } else if (e.target.name === 'colourIds[]') {
+                openModal('newColorModal');
+            }
         }
     });
 
-    document.querySelector('select[name="itemid"]').addEventListener('change', function (e) {
-        if (e.target.value === 'new') {
-            new bootstrap.Modal(document.getElementById('newItemModal')).show();
-        }
-    });
 
-    document.querySelector('select[name="colourid"]').addEventListener('change', function (e) {
-        if (e.target.value === 'new') {
-            new bootstrap.Modal(document.getElementById('newColorModal')).show();
-        }
-    });
-
-    document.querySelector('select[name="sizeid"]').addEventListener('change', function (e) {
-        if (e.target.value === 'new') {
-            new bootstrap.Modal(document.getElementById('newSizeModal')).show();
-        }
-    });
     // Add client-side validation for quantity
-    document.querySelector('input[name="quantity"]').addEventListener('input', function () {
+    document.querySelector('input[name="quantities[]"]').addEventListener('input', function () {
         let quantity = this.value.trim();
         if (quantity !== '' && isNaN(quantity)) {
             this.setCustomValidity('Quantity must be a number');
@@ -32,6 +31,7 @@ document.addEventListener('DOMContentLoaded', function () {
             this.setCustomValidity('');
         }
     });
+
     // CSRF token setup for AJAX requests
     $.ajaxSetup({
         headers: {
@@ -45,7 +45,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }).ajaxStop(function () {
         $('#loadingSpinner').hide();
     });
-
 
     // Handle form submissions for modals
     document.getElementById('newSupplierForm').addEventListener('submit', function (e) {
@@ -112,7 +111,6 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('newColorForm').addEventListener('submit', function (e) {
         e.preventDefault();
         let colorName = document.getElementById('newColorName').value;
-        console.log(colorName)
 
         $.ajax({
             url: '/api/colour',
@@ -122,7 +120,7 @@ document.addEventListener('DOMContentLoaded', function () {
             },
             success: function(response) {
                 if (response.success) {
-                    $('#colourid').append(new Option(response.color.colourName, response.color.colourId));
+                    $('#colourid').append(new Option(response.colour.colourName, response.colour.colourId));
                     $('#newColorModal').modal('hide');
                     document.getElementById('newColorName').value = '';
                     alert('Color added successfully');
@@ -160,5 +158,60 @@ document.addEventListener('DOMContentLoaded', function () {
                 alert('Error: ' + response.responseText);
             }
         });
+    });
+
+    // Add row for new inventory details
+    document.getElementById('addInventoryBtn').addEventListener('click', function () {
+        let tbody = document.querySelector('tbody');
+        let newRow = document.createElement('tr');
+        newRow.classList.add('variant-row');
+
+        newRow.innerHTML = `
+            <td>
+                <select name="sizeIds[]" class="form-control" required>
+                    <option value="" disabled selected>Select Size</option>
+                    ${sizes.map(size => `<option value="${size.sizeId}">${size.sizeValue}</option>`).join('')}
+                    <option value="new">New Size</option>
+                </select>
+            </td>
+            <td>
+                <select name="colourIds[]" class="form-control" required>
+                    <option value="" disabled selected>Select Colour</option>
+                    ${colours.map(colour => `<option value="${colour.colourId}">${colour.colourName}</option>`).join('')}
+                    <option value="new">New Colour</option>
+                </select>
+            </td>
+            <td>
+                <div class="d-flex align-items-center" >
+                    <button type="button" class="btn btn-outline-secondary minus-quantity">-</button>
+                    <input type="number" name="quantities[]" class="form-control mx-2 text-center" value="1" min="1">
+                    <button type="button" class="btn btn-outline-secondary plus-quantity">+</button>
+                </div>
+            </td>
+            <td>
+                <button type="button" class="btn btn-danger remove-row-btn">-</button>
+            </td>
+        `;
+
+        tbody.appendChild(newRow);
+    });
+
+    // Delegate event for removing row and adjusting quantity
+    document.querySelector('tbody').addEventListener('click', function (e) {
+        if (e.target.classList.contains('remove-row-btn')) {
+            if (document.querySelectorAll('.variant-row').length > 1) {
+                e.target.closest('tr').remove();
+            } else {
+                alert('You must have at least one variant.');
+            }
+        } else if (e.target.classList.contains('plus-quantity')) {
+            let input = e.target.closest('.d-flex').querySelector('input');
+            input.value = parseInt(input.value) + 1;
+        } else if (e.target.classList.contains('minus-quantity')) {
+            let input = e.target.closest('.d-flex').querySelector('input');
+            if (input.value > 1) {
+                input.value = parseInt(input.value) - 1;
+            }
+        }
     });
 });
