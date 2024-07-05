@@ -26,3 +26,7 @@ Route::patch('/requests/{request}/update-status', [RequestController::class, 'up
 Route::post('/api/colour', [InventoryController::class, 'storeColor']);
 Route::post('/api/size', [InventoryController::class, 'storeSize']);
 
+Route::get('/fetch-colours/{itemId}', [InventoryController::class, 'fetchColours']);
+Route::get('/fetch-sizes/{itemId}/{colourId}', [InventoryController::class, 'fetchSizes']);
+
+
