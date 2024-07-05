@@ -34,6 +34,22 @@ class InventoryController extends Controller
         return view('manager.inventory.create', compact('items', 'colours', 'sizes','suppliers','categories'));
     }
 
+    public function fetchColours($itemId)
+    {
+        $inventory = Inventory::where('itemId', $itemId)->get();
+        $colors = $inventory->pluck('colour')->unique();
+        return response()->json($colors);
+    }
+
+    public function fetchSizes($itemId, $colourId)
+    {
+        $inventory = Inventory::where('itemId', $itemId)
+            ->where('colourId', $colourId)
+            ->get();
+        $sizes = $inventory->pluck('size')->unique();
+        return response()->json($sizes);
+    }
+
     public function store(Request $request)
     {
         print_r($request->all());

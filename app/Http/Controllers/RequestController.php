@@ -33,6 +33,13 @@ class RequestController extends Controller
 
     public function store(Request $request)
     {
+        $request->validate([
+            'itemIds' => 'required|array',
+            'quantities' => 'required|array',
+            'colourIds' => 'required|array',
+            'sizeIds' => 'required|array',
+            'staffId' => 'required|exists:staff,staffId',
+        ]);
         // Fetch the storeId based on the selected items
         $storeId = null;
         foreach ($request->itemIds as $itemId) {

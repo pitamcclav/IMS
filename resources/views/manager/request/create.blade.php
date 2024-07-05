@@ -33,8 +33,8 @@
                         <table class="table table-bordered">
                             <thead>
                             <tr>
-                                <th>Size</th>
                                 <th>Colour</th>
+                                <th>Size</th>
                                 <th>Quantity</th>
                                 <th>Action</th>
                             </tr>
@@ -42,18 +42,19 @@
                             <tbody>
                             <tr class="variant-row">
                                 <td>
-                                    <select name="sizeIds[]" class="form-control">
-                                        <option value="" disabled selected>Select Size</option>
-                                        @foreach($sizes as $size)
-                                            <option value="{{ $size->sizeId }}">{{ $size->sizeValue }}</option>
-                                        @endforeach
-                                    </select>
-                                </td>
-                                <td>
-                                    <select name="colourIds[]" class="form-control">
+                                    <select name="colourIds[]" class="form-control colour-select">
                                         <option value="" disabled selected>Select Colour</option>
                                         @foreach($colours as $colour)
                                             <option value="{{ $colour->colourId }}">{{ $colour->colourName }}</option>
+                                        @endforeach
+                                    </select>
+                                </td>
+
+                                <td>
+                                    <select name="sizeIds[]" class="form-control size-select">
+                                        <option value="" disabled selected>Select Size</option>
+                                        @foreach($sizes as $size)
+                                            <option value="{{ $size->sizeId }}">{{ $size->sizeValue }}</option>
                                         @endforeach
                                     </select>
                                 </td>
@@ -81,18 +82,21 @@
         <!-- Hidden elements for options -->
         <label for="itemOptions" style="display: none;">Item Options</label>
         <div id="itemOptions" style="display: none;">
+            <option value="" disabled selected>Select Item</option>
             @foreach($items as $item)
                 <option value="{{ $item->itemId }}">{{ $item->itemName }}</option>
             @endforeach
         </div>
         <label for="colourOptions" style="display: none;">Colour Options</label>
         <div id="colourOptions" style="display: none;">
+            <option value="" disabled selected>Select Colour</option>
             @foreach($colours as $colour)
                 <option value="{{ $colour->colourId }}">{{ $colour->colourName }}</option>
             @endforeach
         </div>
         <label for="sizeOptions" style="display: none;">Size Options</label>
         <div id="sizeOptions" style="display: none;">
+            <option value="" disabled selected>Select Size</option>
             @foreach($sizes as $size)
                 <option value="{{ $size->sizeId }}">{{ $size->sizeValue }}</option>
             @endforeach
