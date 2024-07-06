@@ -128,9 +128,6 @@ a.sidebar-link:hover {
     background-color: rgba(255, 255, 255, .075);
     border-left: 3px solid var(--color-accent);
 }
-
-
-
 .sidebar-item {
     position: relative;
 }
@@ -169,6 +166,15 @@ a.sidebar-link:hover {
 #sidebar.expand .sidebar-link[data-bs-toggle="collapse"].collapsed::after {
     transform: rotate(45deg);
     transition: all .2s ease-out;
+}
+.sidebar-footer{
+    padding: 1rem;
+}
+.sidebar-footer a {
+    color: #FFF;
+    font-size: 1.0rem;
+    font-weight: 600;
+    text-decoration: none;
 }
 
 /* Card styling */

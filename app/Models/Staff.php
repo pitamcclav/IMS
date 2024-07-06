@@ -2,16 +2,19 @@
 
 namespace App\Models;
 
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class Staff extends Model
+class Staff extends Authenticatable
 {
-    use HasFactory;
+    use HasFactory, Notifiable;
 
     protected $table = 'staff';
     protected $primaryKey = 'staffId';
-    protected $fillable = ['staffName', 'role'];
+    protected $fillable = ['staffName', 'role', 'email', 'password'];
 
     public function stores()
     {
@@ -21,5 +24,17 @@ class Staff extends Model
     public function requests()
     {
         return $this->hasMany(Request::class, 'staffId');
+    }
+    // Add the required attributes and methods for authentication
+    protected $hidden = [
+        'password', 'remember_token',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+        ];
     }
 }
