@@ -15,14 +15,14 @@ return new class extends Migration
             $table->id('inventoryId'); // Ensure inventoryId is the primary key
             $table->integer('quantity');
             $table->integer('initialQuantity');
-            $table->unsignedBigInteger('storeId');
-            $table->foreign('storeId')->references('storeId')->on('store')->onDelete('cascade');
-            $table->unsignedBigInteger('itemId');
-            $table->foreign('itemId')->references('itemId')->on('item')->onDelete('cascade');
-            $table->unsignedBigInteger('colourId');
-            $table->foreign('colourId')->references('colourId')->on('colour')->onDelete('cascade');
-            $table->unsignedBigInteger('sizeId');
-            $table->foreign('sizeId')->references('sizeId')->on('size')->onDelete('cascade');
+            $table->unsignedBigInteger('storeId')->nullable();
+            $table->foreign('storeId')->references('storeId')->on('store')->onDelete('no action')->cascadeOnUpdate();
+            $table->unsignedBigInteger('itemId')->nullable();
+            $table->foreign('itemId')->references('itemId')->on('item')->onDelete('no action')->cascadeOnUpdate();
+            $table->unsignedBigInteger('colourId')->nullable();
+            $table->foreign('colourId')->references('colourId')->on('colour')->onDelete('no action')->cascadeOnUpdate();
+            $table->unsignedBigInteger('sizeId')->nullable();
+            $table->foreign('sizeId')->references('sizeId')->on('size')->onDelete('no action')->cascadeOnUpdate();
             $table->timestamps();
         });
     }

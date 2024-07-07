@@ -52,9 +52,9 @@ class OrderLimitController extends Controller
         return redirect()->route('orderlimits.index')->with('success', 'Order limit updated successfully.');
     }
 
-    public function destroy(ItemOrderLimit $orderlimit)
+    public function destroy($id)
     {
-        $orderlimit->delete();
-        return redirect()->route('orderlimits.index')->with('success', 'Order limit deleted successfully.');
+        ItemOrderLimit::destroy($id);
+        return response()->json(['success' => true]);
     }
 }

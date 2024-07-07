@@ -41,12 +41,10 @@
                                         </button>
                                         <!-- Edit Button -->
                                         <a href="{{ route('supplier.edit', $supplier->supplierId) }}" class="btn btn-warning btn-sm">Edit</a>
-                                        <!-- Delete Form -->
-                                        <form action="{{ route('supplier.destroy', $supplier->supplierId) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                                        </form>
+                                        <!-- Delete button -->
+                                        <button class="btn btn-danger btn-sm delete-button"
+                                                data-url="{{ route('supplier.destroy', $supplier->supplierId) }}">Delete
+                                        </button>
                                     </td>
                                 </tr>
                             @endforeach

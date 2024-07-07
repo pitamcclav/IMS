@@ -48,6 +48,7 @@
 
 
                 @yield('content')
+                @include('partials.modals.delete')
             </div>
         </div>
 

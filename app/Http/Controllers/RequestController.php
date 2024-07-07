@@ -18,9 +18,19 @@ class RequestController extends Controller
 {
     public function index()
     {
-        $requests = InventoryRequest::with(['staff'])->paginate(10);
-        return view('manager.request.index', compact('requests'));
+        if (auth()->user()->role == 'staff') {
+            $requests = InventoryRequest::where('staffId', auth()->user()->staffId)
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+            return view('manager.request.index', compact('requests'));
+        } else {
+            $requests = InventoryRequest::with(['staff'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+            return view('manager.request.index', compact('requests'));
+        }
     }
+
 
     public function create()
     {
@@ -33,6 +43,11 @@ class RequestController extends Controller
 
     public function store(Request $request)
     {
+        $user = auth()->user();
+        $staffId = $user->staffId;
+
+        $request['staffId'] = $staffId;
+
         $request->validate([
             'itemIds' => 'required|array',
             'quantities' => 'required|array',
@@ -161,11 +176,12 @@ class RequestController extends Controller
         return redirect()->route('requests.index');
     }
 
-    public function destroy(InventoryRequest $request)
+    public function destroy($id)
     {
-        $request->delete();
+        $inventoryRequest = InventoryRequest::findOrFail($id);
+        $inventoryRequest->delete();
 
-        Session::flash('success', 'Request deleted successfully.');
-        return redirect()->route('requests.index');
+        return response()->json(['success' => true]);
+
     }
 }

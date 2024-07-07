@@ -10,10 +10,14 @@
             @csrf
             <div class="form-group">
                 <label for="staff">Staff</label>
-                <select id="staff" name="staffId" class="form-control">
-                    <option value="" disabled selected>Select Staff</option>
+                <select id="staff" name="staffId" class="form-control" {{ auth()->user()->role == 'staff' || auth()->user()->role == 'admin' ? 'disabled' : '' }}>
+                    <option value="" disabled>Select Staff</option>
                     @foreach($staffs as $staff)
-                        <option value="{{ $staff->staffId }}">{{ $staff->staffName }}</option>
+                        @if(auth()->user()->role == 'staff' || auth()->user()->role == 'admin')
+                            <option value="{{ $staff->staffId }}" {{ auth()->user()->staffId == $staff->staffId ? 'selected' : '' }} {{ auth()->user()->staffId == $staff->staffId ? 'disabled' : '' }}>{{ $staff->staffName }}</option>
+                        @else
+                            <option value="{{ $staff->staffId }}">{{ $staff->staffName }}</option>
+                        @endif
                     @endforeach
                 </select>
             </div>

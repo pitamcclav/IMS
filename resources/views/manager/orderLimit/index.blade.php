@@ -37,11 +37,9 @@
                                     <td>{{ $orderlimit->period }}</td>
                                     <td>
                                         <a href="{{ route('orderLimit.edit', $orderlimit->limitId) }}" class="btn btn-warning btn-sm">Edit</a>
-                                        <form action="{{ route('orderLimit.destroy', $orderlimit->limitId) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                                        </form>
+                                        <button class="btn btn-danger delete-button"
+                                                data-url="{{ route('limit.destroy', $limit->limitId) }}">Delete
+                                        </button>
                                     </td>
                                 </tr>
                             @endforeach

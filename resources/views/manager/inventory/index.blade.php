@@ -33,11 +33,7 @@
                         <td>{{ $inventory->initialQuantity }}</td>
                         <td>
                             <a href="{{ route('inventory.edit', $inventory->inventoryId) }}" class="btn btn-warning btn-sm">Edit</a>
-                            <form action="{{ route('inventory.destroy', $inventory->inventoryId) }}" method="POST" style="display:inline-block;">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                            </form>
+                            <button class="btn btn-danger btn-sm delete-button" data-url="{{ route('inventory.destroy', $inventory->inventoryId) }}">Delete</button>
                         </td>
                     </tr>
                 @endforeach

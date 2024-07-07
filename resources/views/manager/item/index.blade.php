@@ -38,11 +38,9 @@
                                         <td>{{ $item->inventory->sum('quantity') }}</td> <!-- Example: Summing up inventory quantities -->
                                         <td>
                                             <a href="{{ route('item.edit', $item->itemId) }}" class="btn btn-warning btn-sm">Edit</a>
-                                            <form action="{{ route('item.destroy', $item->itemId) }}" method="POST" class="d-inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this item?')">Delete</button>
-                                            </form>
+                                            <button class="btn btn-danger delete-button"
+                                                    data-url="{{ route('item.destroy', $item->itemId) }}">Delete
+                                            </button>
                                         </td>
                                     </tr>
                                 @endforeach

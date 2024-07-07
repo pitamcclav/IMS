@@ -32,6 +32,24 @@
                 </li>
             </ul>
         </li>
+        @if (Auth::guard('staff')->check() && Auth::guard('staff')->user()->role == 'manager')
+            <!-- Manager-specific items -->
+            <li class="sidebar-item">
+                <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                   data-bs-target="#categories" aria-expanded="false" aria-controls="categories">
+                    <i class="lni lni-package"></i>
+                    <span>Category Management</span>
+                </a>
+                <ul id="categories" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                    <li class="sidebar-item">
+                        <a href="{{ route('category.index') }}" class="sidebar-link">Category List<i class="lni lni-chevron-right"></i></a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="{{ route('category.create') }}" class="sidebar-link">Add New Category<i class="lni lni-chevron-right"></i></a>
+                    </li>
+                </ul>
+            </li>
+        @endif
 
         @if (Auth::guard('staff')->check() && in_array(Auth::guard('staff')->user()->role, ['admin', 'manager']))
             <!-- Common items for Admin and Manager -->
@@ -51,21 +69,6 @@
                 </ul>
             </li>
 
-            <li class="sidebar-item">
-                <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-                   data-bs-target="#categories" aria-expanded="false" aria-controls="categories">
-                    <i class="lni lni-package"></i>
-                    <span>Category Management</span>
-                </a>
-                <ul id="categories" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                    <li class="sidebar-item">
-                        <a href="{{ route('category.index') }}" class="sidebar-link">Category List<i class="lni lni-chevron-right"></i></a>
-                    </li>
-                    <li class="sidebar-item">
-                        <a href="{{ route('category.create') }}" class="sidebar-link">Add New Category<i class="lni lni-chevron-right"></i></a>
-                    </li>
-                </ul>
-            </li>
             <li class="sidebar-item">
                 <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
                    data-bs-target="#items" aria-expanded="false" aria-controls="items">
@@ -129,20 +132,20 @@
                 </a>
                 <ul id="user-management" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                     <li class="sidebar-item">
-                        <a href="#" class="sidebar-link">Users<i class="lni lni-chevron-right"></i></a>
+                        <a href="{{route('users.index')}}" class="sidebar-link">Users<i class="lni lni-chevron-right"></i></a>
                     </li>
                     <li class="sidebar-item">
                         <a href="" class="sidebar-link">Roles<i class="lni lni-chevron-right"></i></a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="{{route('stores')}}" class="sidebar-link">Stores<i class="lni lni-chevron-right"></i></a>
                     </li>
                 </ul>
             </li>
             <!-- Additional Admin Specific Items -->
         @endif
 
-        @if (Auth::guard('staff')->check() && Auth::guard('staff')->user()->role == 'manager')
-            <!-- Manager-specific items -->
-            <!-- Additional Manager Specific Items -->
-        @endif
+
 
         @if (Auth::guard('staff')->check() && Auth::guard('staff')->user()->role == 'staff')
             <!-- Staff-specific items -->

@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id('storeId');
             $table->string('storeName');
             $table->string('location');
-            $table->unsignedBigInteger('staffId');
-            $table->foreign('staffId')->references('staffId')->on('staff')->onDelete('cascade');
+            $table->unsignedBigInteger('staffId')->nullable();
+            $table->foreign('staffId')->references('staffId')->on('staff')->onDelete('no action')->cascadeOnUpdate();
             $table->timestamps();
         });
     }

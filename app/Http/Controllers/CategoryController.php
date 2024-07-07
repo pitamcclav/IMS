@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\Store;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 
@@ -26,12 +27,26 @@ class CategoryController extends Controller
             'isReturnable' => 'required|boolean',
         ]);
 
-        Category::create($request->all());
+        $categoryData = $request->all();
+
+        // Get the currently authenticated manager
+        $manager = auth()->user();
+        $store = Store::where('staffId', $manager->staffId)->first();
+
+
+        // Check if the manager is attached to a store
+        if ($manager && $store->storeId) {
+            // Set the store ID of the category to the store ID of the manager
+            $categoryData['storeId'] = $store->storeId;
+        }
+
+        Category::create($categoryData);
 
         Session::flash('success', 'Category added successfully.');
 
-        return redirect()->route('categories.index');
+        return redirect()->route('category.index');
     }
+
 
     public function edit(Category $category)
     {
@@ -52,9 +67,10 @@ class CategoryController extends Controller
         return redirect()->route('categories.index');
     }
 
-    public function destroy(Category $category)
+    public function destroy($id)
     {
+        $category = Category::find($id);
         $category->delete();
-        return redirect()->route('categories.index')->with('success', 'Category deleted successfully.');
+        return response()->json(['success' => true]);
     }
 }
