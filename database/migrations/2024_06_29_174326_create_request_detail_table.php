@@ -14,14 +14,28 @@ return new class extends Migration
         Schema::create('request_detail', function (Blueprint $table) {
             $table->id('requestDetailId'); // Ensure requestDetailId is the primary key
             $table->unsignedBigInteger('requestId');
-            $table->foreign('requestId')->references('requestId')->on('request')->onDelete('cascade');
-            $table->unsignedBigInteger('itemId');
-            $table->foreign('itemId')->references('itemId')->on('item')->onDelete('cascade');
+            $table->foreign('requestId')
+                ->references('requestId')
+                ->on('request')
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
+            $table->unsignedBigInteger('itemId')->nullable();
+            $table->foreign('itemId')
+                ->references('itemId')
+                ->on('item')
+                ->onDelete('no action')
+                ->onUpdate('cascade');
             $table->integer('quantity');
             $table->unsignedBigInteger('colourId');
-            $table->foreign('colourId')->references('colourId')->on('colour')->onDelete('cascade');
+            $table->foreign('colourId')
+                ->references('colourId')
+                ->on('colour')
+                ->onDelete('no action');
             $table->unsignedBigInteger('sizeId');
-            $table->foreign('sizeId')->references('sizeId')->on('size')->onDelete('cascade');
+            $table->foreign('sizeId')
+                ->references('sizeId')
+                ->on('size')
+                ->onDelete('no action');
             $table->timestamps();
         });
 

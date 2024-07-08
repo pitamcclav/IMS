@@ -10,7 +10,7 @@ class SupplierController extends Controller
 {
     public function index()
     {
-        $suppliers = Supplier::all();
+        $suppliers = Supplier::with('supply.item')->get();
         return view('manager.supplier.index', compact('suppliers'));
     }
 
@@ -52,9 +52,10 @@ class SupplierController extends Controller
         return redirect()->route('supplier.index')->with('success', 'Supplier updated successfully.');
     }
 
-    public function destroy(Supplier $supplier)
+    public function destroy($id)
     {
+        $supplier = Supplier::find($id);
         $supplier->delete();
-        return redirect()->route('supplier.index')->with('success', 'Supplier deleted successfully.');
+        return response()->json(['success' => true]);
     }
 }

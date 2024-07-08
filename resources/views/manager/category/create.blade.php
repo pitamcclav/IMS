@@ -10,7 +10,7 @@
             @csrf
             <div class="form-group">
                 <label for="categoryName">Category Name</label>
-                <input type="text" id="categoryName" name="categoryName" class="form-control">
+                <input type="text" placeholder="Add Category" id="categoryName" name="categoryName" class="form-control">
             </div>
             <div class="form-group">
                 <label for="isReturnable">Is Returnable</label>

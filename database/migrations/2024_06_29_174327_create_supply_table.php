@@ -14,9 +14,16 @@ return new class extends Migration
         Schema::create('supply', function (Blueprint $table) {
             $table->id('supplyId'); // Ensure supplyId is the primary key
             $table->unsignedBigInteger('supplierId');
-            $table->foreign('supplierId')->references('supplierId')->on('supplier')->onDelete('cascade');
+            $table->foreign('supplierId')
+                ->references('supplierId')
+                ->on('supplier')
+                ->onDelete('no action');
             $table->unsignedBigInteger('itemId');
-            $table->foreign('itemId')->references('itemId')->on('item')->onDelete('cascade');
+            $table->foreign('itemId')
+                ->references('itemId')
+                ->on('item')
+                ->onDelete('no action');
+            $table->integer('quantity');
             $table->date('supplyDate');
             $table->timestamps();
         });

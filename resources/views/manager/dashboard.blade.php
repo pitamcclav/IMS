@@ -8,6 +8,19 @@
             <!-- Key Metrics -->
             <div class="col-md-6 col-lg-4 mb-4">
                 <div class="card">
+                    <div class="card-header bg-success text-white">
+                        Items
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title text-success">Total Items: {{ $itemsCount }}</h5>
+                        <p class="card-text">View detailed items.</p>
+                        <a href="{{ route('item.index') }}" class="btn btn-success">View Items</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card">
                     <div class="card-header bg-primary text-white">
                         Inventory Levels
                     </div>
@@ -31,7 +44,6 @@
                 </div>
             </div>
         </div>
-
 
         <div class="row">
             <!-- Pie Chart for Inventory -->

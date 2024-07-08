@@ -30,16 +30,43 @@
 
             <!-- Main Content -->
             <div class="container-fluid main p-3">
+                @if(Session::has('success'))
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{ Session::get('success') }}
+                        <button type="button" class="btn-close" data-dismiss="alert" aria-label="Close">
+                        </button>
+                    </div>
+                @endif
+
+                @if(Session::has('error'))
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ Session::get('error') }}
+                        <button type="button" class="btn-close" data-dismiss="alert" aria-label="Close">
+                        </button>
+                    </div>
+                @endif
+
+
                 @yield('content')
+                @include('partials.modals.delete')
             </div>
         </div>
 
         <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
-        @yield('scripts')
+
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
         <!-- Bootstrap JS and Dependencies from CDN -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
         <!-- Custom JS -->
+        @yield('scripts')
         <script src="{{ asset('js/app.js') }}"></script>
+        <script>
+            $(document).ready(function() {
+                // Adjust the timeout duration (in milliseconds) as needed
+                setTimeout(function() {
+                    $(".alert").alert('close');
+                }, 5000); // 5000 milliseconds = 5 seconds
+            });
+        </script>
     </body>
 </html>

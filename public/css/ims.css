@@ -128,9 +128,6 @@ a.sidebar-link:hover {
     background-color: rgba(255, 255, 255, .075);
     border-left: 3px solid var(--color-accent);
 }
-
-
-
 .sidebar-item {
     position: relative;
 }
@@ -169,6 +166,15 @@ a.sidebar-link:hover {
 #sidebar.expand .sidebar-link[data-bs-toggle="collapse"].collapsed::after {
     transform: rotate(45deg);
     transition: all .2s ease-out;
+}
+.sidebar-footer{
+    padding: 1rem;
+}
+.sidebar-footer a {
+    color: #FFF;
+    font-size: 1.0rem;
+    font-weight: 600;
+    text-decoration: none;
 }
 
 /* Card styling */
@@ -276,4 +282,37 @@ a.sidebar-link:hover {
 .status-label.picked {
     background-color: #007bff; /* Blue for picked */
 }
-
+.pagination {
+    display: flex;
+    justify-content: center;
+    list-style: none;
+}
+.page-item {
+    margin: 0 2px;
+}
+.page-link {
+    color: #007bff;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    padding: .375rem .75rem;
+}
+.page-link:hover {
+    z-index: 2;
+    color: #0056b3;
+    text-decoration: none;
+    background-color: #e9ecef;
+    border-color: #dee2e6;
+}
+.page-item.active .page-link {
+    z-index: 3;
+    color: #fff;
+    background-color: #007bff;
+    border-color: #007bff;
+}
+.page-item.disabled .page-link {
+    color: #6c757d;
+    pointer-events: none;
+    cursor: auto;
+    background-color: #fff;
+    border-color: #dee2e6;
+}

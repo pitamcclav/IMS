@@ -15,10 +15,18 @@ return new class extends Migration
             $table->id('requestId'); // Ensure requestId is the primary key
             $table->timestamp('date');
             $table->string('status');
-            $table->unsignedBigInteger('storeId');
-            $table->foreign('storeId')->references('storeId')->on('store')->onDelete('cascade');
+            $table->unsignedBigInteger('storeId')->nullable();
+            $table->foreign('storeId')
+                ->references('storeId')
+                ->on('store')
+                ->onDelete('no action')
+                ->cascadeOnUpdate();
             $table->unsignedBigInteger('staffId');
-            $table->foreign('staffId')->references('staffId')->on('staff')->onDelete('cascade');
+            $table->foreign('staffId')
+                ->references('staffId')
+                ->on('staff')
+                ->onDelete('no action');
+
             $table->timestamps();
         });
 

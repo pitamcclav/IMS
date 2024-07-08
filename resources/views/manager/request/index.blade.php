@@ -21,7 +21,7 @@
                         <table class="table table-bordered table-striped">
                             <thead>
                             <tr>
-                                <th>ID</th>
+                                <th>#</th>
                                 <th>Date</th>
                                 <th>Status</th>
                                 <th>Staff</th>
@@ -29,9 +29,9 @@
                             </tr>
                             </thead>
                             <tbody>
-                            @foreach($requests as $request)
+                            @foreach($requests as $index => $request)
                                 <tr>
-                                    <td>{{ $request->requestId }}</td>
+                                    <td>{{ $index + 1 }}</td>
                                     <td>{{ $request->date }}</td>
                                     <td>
                                         <span class="status-label {{ strtolower($request->status) }}">{{ $request->status }}</span>
@@ -40,23 +40,25 @@
                                     <td>
                                         <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#viewRequestModal{{ $request->requestId }}">View</button>
                                         @if ($request->status != 'picked')
-                                            <a href="{{ route('requests.edit', $request->requestId) }}" class="btn btn-warning btn-sm">Edit</a>
-                                            <form action="{{ route('requests.updateStatus', $request->requestId) }}" method="POST" class="d-inline">
-                                                @csrf
-                                                @method('PATCH')
-                                                @if ($request->status == 'pending')
-                                                    <input type="hidden" name="status" value="ready">
-                                                    <button type="submit" class="btn btn-success btn-sm">Mark as Ready</button>
-                                                @elseif ($request->status == 'ready')
-                                                    <input type="hidden" name="status" value="picked">
-                                                    <button type="submit" class="btn btn-primary btn-sm">Mark as Picked</button>
-                                                @endif
-                                            </form>
-                                            <form action="{{ route('requests.destroy', $request->requestId) }}" method="POST" class="d-inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                                            </form>
+                                            @if(auth()->user()->role == 'staff' && $request->status == 'pending')
+                                                <a href="{{ route('requests.edit', $request->requestId) }}" class="btn btn-warning btn-sm">Edit</a>
+                                                <button class="btn btn-danger btn-sm delete-button"
+                                                        data-url="{{ route('requests.destroy', $request->requestId) }}">Delete
+                                                </button>
+                                            @endif
+                                            @if(auth()->user()->role == 'admin' || auth()->user()->role == 'manager')
+                                                <form action="{{ route('requests.updateStatus', $request->requestId) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    @if ($request->status == 'pending')
+                                                        <input type="hidden" name="status" value="ready">
+                                                        <button type="submit" class="btn btn-success btn-sm">Mark as Ready</button>
+                                                    @elseif ($request->status == 'ready')
+                                                        <input type="hidden" name="status" value="picked">
+                                                        <button type="submit" class="btn btn-primary btn-sm">Mark as Picked</button>
+                                                    @endif
+                                                </form>
+                                            @endif
                                         @endif
                                     </td>
                                 </tr>
@@ -91,14 +93,20 @@
                                         </div>
                                     </div>
                                 </div>
+                                <!-- Modal for Viewing Request Details -->
                             @endforeach
                             </tbody>
                         </table>
+                    </div>
+
+                    <div class="mt-3">
+                        {{ $requests->links('vendor.pagination.bootstrap-5') }}
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
 @endsection
 
 @push('scripts')

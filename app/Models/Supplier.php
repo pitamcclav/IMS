@@ -15,6 +15,6 @@ class Supplier extends Model
 
     public function supply()
     {
-        return $this->hasMany(Supply::class, 'supplierid');
+        return $this->hasMany(Supply::class, 'supplierId');
     }
 }

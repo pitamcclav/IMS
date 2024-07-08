@@ -14,8 +14,11 @@ return new class extends Migration
         Schema::create('item', function (Blueprint $table) {
             $table->id('itemId'); // Ensure itemId is the primary key
             $table->string('itemName');
-            $table->unsignedBigInteger('categoryId');
-            $table->foreign('categoryId')->references('categoryId')->on('category')->onDelete('cascade');
+            $table->unsignedBigInteger('categoryId')->nullable();
+            $table->foreign('categoryId')->references('categoryId')
+                ->on('category')
+                ->onDelete('no action')
+                ->cascadeOnUpdate();
             $table->text('description');
             $table->timestamps();
         });

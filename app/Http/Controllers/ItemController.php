@@ -10,7 +10,7 @@ class ItemController extends Controller
 {
     public function index()
     {
-        $items = Item::all();
+        $items = Item::with('inventory')->paginate(10);
         return view('manager.item.index', compact('items'));
     }
 
@@ -54,9 +54,10 @@ class ItemController extends Controller
         return redirect()->route('item.index')->with('success', 'Item updated successfully.');
     }
 
-    public function destroy(Item $item)
+    public function destroy($id)
     {
+        $item = Item::find($id);
         $item->delete();
-        return redirect()->route('items.index')->with('success', 'Item deleted successfully.');
+        return response()->json(['success' => true]);
     }
 }

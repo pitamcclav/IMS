@@ -35,11 +35,9 @@
                                     <td>{{ $category->isReturnable ? 'Yes' : 'No' }}</td>
                                     <td>
                                         <a href="{{ route('category.edit', $category->categoryId) }}" class="btn btn-warning btn-sm">Edit</a>
-                                        <form action="{{ route('category.destroy', $category->categoryId) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                                        </form>
+                                        <button class="btn btn-sm btn-danger delete-button"
+                                                data-url="{{ route('category.destroy', $category->categoryId) }}">Delete
+                                        </button>
                                     </td>
                                 </tr>
                             @endforeach

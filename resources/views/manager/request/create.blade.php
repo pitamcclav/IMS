@@ -10,65 +10,101 @@
             @csrf
             <div class="form-group">
                 <label for="staff">Staff</label>
-                <select id="staff" name="staffId" class="form-control">
+                <select id="staff" name="staffId" class="form-control" {{ auth()->user()->role == 'staff' || auth()->user()->role == 'admin' ? 'disabled' : '' }}>
+                    <option value="" disabled>Select Staff</option>
                     @foreach($staffs as $staff)
-                        <option value="{{ $staff->staffId }}">{{ $staff->staffName }}</option>
+                        @if(auth()->user()->role == 'staff' || auth()->user()->role == 'admin')
+                            <option value="{{ $staff->staffId }}" {{ auth()->user()->staffId == $staff->staffId ? 'selected' : '' }} {{ auth()->user()->staffId == $staff->staffId ? 'disabled' : '' }}>{{ $staff->staffName }}</option>
+                        @else
+                            <option value="{{ $staff->staffId }}">{{ $staff->staffName }}</option>
+                        @endif
                     @endforeach
                 </select>
             </div>
             <hr>
-            <div class="form-group">
-                <label for="requestDetails">Request Details</label>
-                <div id="requestDetails">
-                    <div class="requestDetail">
-                        <label for="item">Item</label>
-                        <select name="itemIds[]" class="form-control">
-                            @foreach($items as $item)
-                                <option value="{{ $item->itemId }}">{{ $item->itemName }}</option>
-                            @endforeach
-                        </select>
-                        <label for="quantity">Quantity</label>
-                        <input type="number" name="quantities[]" class="form-control" placeholder="Quantity">
-                        <label for="colourOptions">Colour</label>
-                        <select name="colourIds[]" class="form-control">
-                            @foreach($colours as $colour)
-                                <option value="{{ $colour->colourId }}">{{ $colour->colourName }}</option>
-                            @endforeach
-                        </select>
-                        <label for="sizeOptions">Size</label>
-                        <select name="sizeIds[]" class="form-control">
-                            @foreach($sizes as $size)
-                                <option value="{{ $size->sizeId }}">{{ $size->sizeValue }}</option>
-                            @endforeach
-                        </select>
+            <div id="requestDetailsContainer">
+                <div class="requestDetail mb-3">
+                    <label for="item">Item</label>
+                    <select name="itemIds[]" class="form-control item-select">
+                        <option value="" disabled selected>Select Item</option>
+                        @foreach($items as $item)
+                            <option value="{{ $item->itemId }}">{{ $item->itemName }}</option>
+                        @endforeach
+                    </select>
+
+                    <div class="item-variants">
+                        <label>Variants</label>
+                        <table class="table table-bordered">
+                            <thead>
+                            <tr>
+                                <th>Colour</th>
+                                <th>Size</th>
+                                <th>Quantity</th>
+                                <th>Action</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr class="variant-row">
+                                <td>
+                                    <select name="colourIds[]" class="form-control colour-select">
+                                        <option value="" disabled selected>Select Colour</option>
+                                        @foreach($colours as $colour)
+                                            <option value="{{ $colour->colourId }}">{{ $colour->colourName }}</option>
+                                        @endforeach
+                                    </select>
+                                </td>
+
+                                <td>
+                                    <select name="sizeIds[]" class="form-control size-select">
+                                        <option value="" disabled selected>Select Size</option>
+                                        @foreach($sizes as $size)
+                                            <option value="{{ $size->sizeId }}">{{ $size->sizeValue }}</option>
+                                        @endforeach
+                                    </select>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <button type="button" class="btn btn-outline-secondary minus-quantity">-</button>
+                                        <input type="number" name="quantities[]" class="form-control mx-2 text-center" value="1" min="1">
+                                        <button type="button" class="btn btn-outline-secondary plus-quantity">+</button>
+                                    </div>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-success add-row-btn">+</button>
+                                    <button type="button" class="btn btn-danger remove-row-btn">-</button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
                     </div>
-                    <hr>
                 </div>
-                <button type="button" class="btn btn-secondary my-4" id="addRequestDetailBtn">Add More</button>
             </div>
-            <button type="submit" class="btn btn-primary">Add Request</button>
+            <button type="button" class="btn btn-secondary my-4" id="addItemBtn">Add Item</button>
+            <button type="submit" class="btn btn-primary">Submit</button>
         </form>
 
         <!-- Hidden elements for options -->
         <label for="itemOptions" style="display: none;">Item Options</label>
         <div id="itemOptions" style="display: none;">
+            <option value="" disabled selected>Select Item</option>
             @foreach($items as $item)
                 <option value="{{ $item->itemId }}">{{ $item->itemName }}</option>
             @endforeach
         </div>
         <label for="colourOptions" style="display: none;">Colour Options</label>
         <div id="colourOptions" style="display: none;">
+            <option value="" disabled selected>Select Colour</option>
             @foreach($colours as $colour)
                 <option value="{{ $colour->colourId }}">{{ $colour->colourName }}</option>
             @endforeach
         </div>
         <label for="sizeOptions" style="display: none;">Size Options</label>
         <div id="sizeOptions" style="display: none;">
+            <option value="" disabled selected>Select Size</option>
             @foreach($sizes as $size)
                 <option value="{{ $size->sizeId }}">{{ $size->sizeValue }}</option>
             @endforeach
         </div>
-
     </div>
 @endsection
 
