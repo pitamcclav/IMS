@@ -184,12 +184,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function addRequestDetail() {
-        const detailDiv = document.createElement('div');
-        detailDiv.classList.add('requestDetail', 'mb-3');
-        detailDiv.innerHTML = `
 
+        const requestDetailElements = document.querySelectorAll('.requestDetail');
+        const index = requestDetailElements.length; // Get the next available index
+
+        const detailDiv = document.createElement('div');
+        detailDiv.classList.add(`requestDetail`, `requestDetail-${index}`, 'mb-3');
+        detailDiv.innerHTML = `
             <label for="item">Item</label>
-            <select name="itemIds[]" class="form-control item-select mb-2">
+            <select name="itemIds[${index}]" class="form-control item-select item-${index} mb-2">
                 ${itemOptions}
             </select>
 
@@ -205,22 +208,21 @@ document.addEventListener('DOMContentLoaded', () => {
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="variant-row">
+                        <tr class="variant-row variant-row-${index}">
                             <td>
-                                <select name="colourIds[]" class="form-control colour-select">
+                                <select name="colourIds[${index}]" class="form-control colour-select colour-${index}">
                                     ${colourOptions}
                                 </select>
                             </td>
                             <td>
-                                <select name="sizeIds[]" class="form-control size-select">
+                                <select name="sizeIds[${index}]" class="form-control size-select size-${index}">
                                     ${sizeOptions}
                                 </select>
                             </td>
-
                             <td>
                                 <div class="d-flex align-items-center">
                                     <button type="button" class="btn btn-outline-secondary minus-quantity">-</button>
-                                    <input type="number" name="quantities[]" class="form-control mx-2 text-center" value="1" min="1">
+                                    <input type="number" name="quantities[]" class="form-control mx-2 text-center quantity-${index}" value="1" min="1">
                                     <button type="button" class="btn btn-outline-secondary plus-quantity">+</button>
                                 </div>
                             </td>
@@ -284,11 +286,68 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
 
-        attachEventListeners(detailDiv);
+        attachEventListeners(detailDiv.querySelector('.variant-row'));
         updateAddRowButtons();
     }
 
     addItemBtn.addEventListener('click', addRequestDetail);
+
+    document.getElementById('submitBtn').addEventListener('click', function(event) {
+        event.preventDefault(); // Prevent the default form submission
+
+        const requestDetails = document.querySelectorAll('.requestDetail');
+        const organizedData = [];
+
+        requestDetails.forEach((detail, detailIndex) => {
+            const itemId = detail.querySelector('.item-select').value;
+            const variants = detail.querySelectorAll('.variant-row');
+
+            variants.forEach((variant, variantIndex) => {
+                const colourId = variant.querySelector('.colour-select').value;
+                const sizeId = variant.querySelector('.size-select').value;
+                const quantity = variant.querySelector('input[name^="quantities"]').value;
+
+                // Create an object for each variant and append it to the organizedData array
+                organizedData.push({
+                    itemId: itemId,
+                    colourId: colourId,
+                    sizeId: sizeId,
+                    quantity: quantity
+                });
+            });
+        });
+
+        console.log(organizedData);
+
+        var staffId = $('#staffId').val() ? $('#staffId').val() : null;
+        console.log(staffId);
+        // You can now send organizedData to the backend using AJAX or a form submission
+        // Example with AJAX:
+        $.ajax({
+            url: '/requests',
+            type: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') // If using Laravel
+            },
+            data: JSON.stringify({ data: organizedData, staffId: staffId}),
+            success: function(response) {
+                // Handle the response from the server
+                console.log('Success:', response);
+
+                // Redirect based on the response
+                if (response.success) {
+                    window.location.href = response.redirect_url;
+                } else {
+                    alert(response.message || 'An error occurred.');
+                }
+            },
+            error: function(error) {
+                console.error('Error:', error);
+                alert('An error occurred.');
+            }
+        });
+    });
 
     // Initialize event listeners for the initial rows
     document.querySelectorAll('.variant-row').forEach(row => {
