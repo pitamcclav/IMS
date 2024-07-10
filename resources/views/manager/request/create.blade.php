@@ -6,7 +6,7 @@
     <div class="container">
         <h1 class="h3 mb-3 text-gray-800">Add New Request</h1>
 
-        <form action="{{ route('requests.store') }}" method="POST">
+        <form  method="POST">
             @csrf
             <div class="form-group">
                 <label for="staff">Staff</label>
@@ -65,7 +65,7 @@
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <button type="button" class="btn btn-outline-secondary minus-quantity">-</button>
-                                        <input type="number" name="quantities[]" class="form-control mx-2 text-center" value="1" min="1">
+                                        <input type="number" name="quantities[]" class="form-control quantity-select mx-2 text-center" value="1" min="1">
                                         <button type="button" class="btn btn-outline-secondary plus-quantity">+</button>
                                     </div>
                                 </td>
@@ -80,7 +80,7 @@
                 </div>
             </div>
             <button type="button" class="btn btn-secondary my-4" id="addItemBtn">Add Item</button>
-            <button type="submit" class="btn btn-primary">Submit</button>
+            <button type="submit" id="submitBtn" class="btn btn-primary">Submit</button>
         </form>
 
         <!-- Hidden elements for options -->

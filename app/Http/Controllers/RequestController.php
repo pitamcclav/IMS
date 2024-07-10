@@ -12,7 +12,9 @@ use App\Models\Staff;
 use App\Models\Category;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
+use function Symfony\Component\VarDumper\Dumper\esc;
 
 class RequestController extends Controller
 {
@@ -43,22 +45,32 @@ class RequestController extends Controller
 
     public function store(Request $request)
     {
-        $user = auth()->user();
-        $staffId = $user->staffId;
+        if (auth()->user()->role == 'staff' || auth()->user()->role == 'admin') {
+            $request['staffId'] = auth()->user()->staffId;
+        }else if(auth()->user()->role == 'manager'&& $request->staffId==null){
+            $request['staffId'] = auth()->user()->staffId;
 
-        $request['staffId'] = $staffId;
+        }
 
+        // Log the request data for debugging
+        Log::info('Request data', $request->all());
+
+        // Validate the incoming request data
         $request->validate([
-            'itemIds' => 'required|array',
-            'quantities' => 'required|array',
-            'colourIds' => 'required|array',
-            'sizeIds' => 'required|array',
+            'data' => 'required|array',
+            'data.*.itemId' => 'required|exists:item,itemId',
+            'data.*.quantity' => 'required|integer|min:1',
+            'data.*.colourId' => 'required|exists:colour,colourId',
+            'data.*.sizeId' => 'required|exists:size,sizeId',
             'staffId' => 'required|exists:staff,staffId',
         ]);
-        // Fetch the storeId based on the selected items
+
+        // Initialize storeId to null
         $storeId = null;
-        foreach ($request->itemIds as $itemId) {
-            $item = Item::find($itemId);
+
+        // Loop through each request detail to fetch storeId
+        foreach ($request->data as $detail) {
+            $item = Item::find($detail['itemId']);
             if ($item) {
                 $category = Category::find($item->categoryId);
                 if ($category) {
@@ -75,29 +87,30 @@ class RequestController extends Controller
             return redirect()->back()->withErrors(['error' => 'Invalid items selected.']);
         }
 
+        // Use a database transaction to ensure data integrity
         \DB::transaction(function () use ($request, $storeId) {
-            $data = [
+            // Create the inventory request
+            $inventoryRequest = InventoryRequest::create([
                 'date' => Carbon::now(),
                 'status' => 'pending',
                 'staffId' => $request->staffId,
                 'storeId' => $storeId,
-            ];
+            ]);
 
-            $inventoryRequest = InventoryRequest::create($data);
-
-            // Handle the request details
-            foreach ($request->itemIds as $index => $itemId) {
+            // Create each request detail
+            foreach ($request->data as $detail) {
+                Log::info('Request detail', $detail);
                 RequestDetail::create([
                     'requestId' => $inventoryRequest->requestId,
-                    'itemId' => $itemId,
-                    'quantity' => $request->quantities[$index],
-                    'colourId' => $request->colourIds[$index],
-                    'sizeId' => $request->sizeIds[$index],
+                    'itemId' => $detail['itemId'],
+                    'quantity' => $detail['quantity'],
+                    'colourId' => $detail['colourId'],
+                    'sizeId' => $detail['sizeId'],
                 ]);
             }
         });
 
-        return redirect()->route('requests.index')->with('success', 'Request added successfully.');
+        return response()->json(['success' => true, 'redirect_url' => route('requests.index')]);
     }
 
 
