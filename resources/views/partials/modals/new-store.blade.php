@@ -9,11 +9,11 @@
             <form id="newStoreForm">
                     <div class="form-group">
                         <label for="storeName">Store Name</label>
-                        <input type="text" class="form-control" id="storeName" required>
+                        <input type="text" placeholder="Store Name" class="form-control" id="storeName" required>
                     </div>
                     <div class="form-group">
                         <label for="location">Location</label>
-                        <input type="text" class="form-control" id="location" required>
+                        <input type="text" placeholder="Store Location" class="form-control" id="location" required>
                     </div>
                     <div class="form-group">
                         <label for="staff">Staff In-charge</label>

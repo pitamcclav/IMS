@@ -14,9 +14,9 @@ class Store extends Model
     protected $primaryKey = 'storeId';
     protected $fillable = ['storeName', 'location', 'staffId'];
 
-    public function staff()
+    public function manager()
     {
-        return $this->belongsTo(Staff::class, 'staffId');
+        return $this->belongsTo(Staff::class, 'managerId',"staffId");
     }
 
     public function inventory()

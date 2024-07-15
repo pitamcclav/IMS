@@ -22,7 +22,7 @@
                             <table class="table table-bordered table-striped">
                                 <thead>
                                 <tr>
-                                    <th>ID</th>
+                                    <th>#</th>
                                     <th>Name</th>
                                     <th>Category</th>
                                     <th>Inventory Quantity</th>
@@ -30,15 +30,15 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-                                @foreach($items as $item)
+                                @foreach($items as $index => $item)
                                     <tr>
-                                        <td>{{ $item->itemId }}</td>
+                                        <td>{{ $loop->iteration + ($items->currentPage() - 1) * $items->perPage() }}</td>
                                         <td>{{ $item->itemName }}</td>
                                         <td>{{ $item->category->categoryName }}</td>
-                                        <td>{{ $item->inventory->sum('quantity') }}</td> <!-- Example: Summing up inventory quantities -->
+                                        <td>{{ $item->inventory->sum('quantity') }}</td>
                                         <td>
                                             <a href="{{ route('item.edit', $item->itemId) }}" class="btn btn-warning btn-sm">Edit</a>
-                                            <button class="btn btn-danger delete-button"
+                                            <button class="btn btn-danger delete-button btn-sm"
                                                     data-url="{{ route('item.destroy', $item->itemId) }}">Delete
                                             </button>
                                         </td>

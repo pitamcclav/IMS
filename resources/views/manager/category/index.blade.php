@@ -21,16 +21,16 @@
                         <table class="table table-bordered table-striped">
                             <thead>
                             <tr>
-                                <th>ID</th>
+                                <th>#</th>
                                 <th>Name</th>
                                 <th>Is Returnable</th>
                                 <th>Actions</th>
                             </tr>
                             </thead>
                             <tbody>
-                            @foreach($categories as $category)
+                            @foreach($categories as $index => $category)
                                 <tr>
-                                    <td>{{ $category->categoryId }}</td>
+                                    <td>{{ $index + 1 }}</td> <!-- Simple index increment -->
                                     <td>{{ $category->categoryName }}</td>
                                     <td>{{ $category->isReturnable ? 'Yes' : 'No' }}</td>
                                     <td>

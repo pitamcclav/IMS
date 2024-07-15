@@ -7,47 +7,57 @@ use App\Models\Inventory;
 use App\Models\Item;
 use App\Models\Colour;
 use App\Models\Size;
+use App\Models\Store;
 use App\Models\Supplier;
 use App\Models\Supply;
 use Carbon\Carbon;
-use Carbon\Traits\Date;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 
 class InventoryController extends Controller
 {
     public function index()
     {
-        // Eager load related models
-        $inventories = Inventory::with(['item', 'colour', 'size'])->paginate(10);
-//        print($inventories);
-        return view('manager.inventory.index', compact('inventories'));
+        if(auth()->user()->hasRole('admin')){
+            $inventories = Inventory::with(['item', 'colour', 'size', 'store'])
+                ->paginate(10);
+
+            return view('manager.inventory.index', compact('inventories'));
+        }else{
+            $managerId = Auth::guard('staff')->user()->staffId;
+
+            $storeId = Store::where('managerId', $managerId)
+                ->value('storeId');
+            // Eager load related models
+            $inventories = Inventory::with(['item', 'colour', 'size', 'store'])
+                ->where('storeId', $storeId)
+                ->paginate(10);
+
+            return view('manager.inventory.index', compact('inventories'));
+        }
+
     }
 
     public function create()
     {
-        $items = Item::all();
+        if(auth()->user()->hasRole('admin')){
+            $items = Item::with('inventory')->get();
+        }else{
+            $managerId = Auth::guard('staff')->user()->staffId;
+
+            $storeId = Store::where('managerId', $managerId)
+                ->value('storeId');
+
+            $items = Item::with('inventory')->whereHas('category', function ($query) use ($storeId) {
+                $query->where('storeId', $storeId);
+            })->get();
+        }
         $colours = Colour::all();
         $sizes = Size::all();
         $suppliers = Supplier::all();
         $categories = Category::all();
         return view('manager.inventory.create', compact('items', 'colours', 'sizes','suppliers','categories'));
-    }
-
-    public function fetchColours($itemId)
-    {
-        $inventory = Inventory::where('itemId', $itemId)->get();
-        $colors = $inventory->pluck('colour')->unique();
-        return response()->json($colors);
-    }
-
-    public function fetchSizes($itemId, $colourId)
-    {
-        $inventory = Inventory::where('itemId', $itemId)
-            ->where('colourId', $colourId)
-            ->get();
-        $sizes = $inventory->pluck('size')->unique();
-        return response()->json($sizes);
     }
 
     public function store(Request $request)
@@ -138,11 +148,23 @@ class InventoryController extends Controller
 
     public function edit(Inventory $inventory)
     {
-        $items = Item::all();
+        if(auth()->user()->hasRole('admin')){
+            $items = Item::with('inventory')->get();
+        }else{
+            $managerId = Auth::guard('staff')->user()->staffId;
+
+            $storeId = Store::where('managerId', $managerId)
+                ->value('storeId');
+
+            $items = Item::with('inventory')->whereHas('category', function ($query) use ($storeId) {
+                $query->where('storeId', $storeId);
+            })->get();
+        }
         $colors = Colour::all();
         $sizes = Size::all();
         return view('manager.inventory.edit', compact('inventory', 'items', 'colors', 'sizes'));
     }
+
 
     public function update(Request $request, Inventory $inventory)
     {

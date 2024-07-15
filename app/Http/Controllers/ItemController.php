@@ -4,20 +4,45 @@ namespace App\Http\Controllers;
 
 use App\Models\Item;
 use App\Models\Category;
+use App\Models\Store;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ItemController extends Controller
 {
     public function index()
     {
-        $items = Item::with('inventory')->paginate(10);
+
+        if(auth()->user()->hasRole('admin')){
+            $items = Item::with('inventory')->paginate(10);
+        }else{
+            $managerId = Auth::guard('staff')->user()->staffId;
+
+            $storeId = Store::where('managerId', $managerId)
+                ->value('storeId');
+
+            $items = Item::with('inventory')->whereHas('category', function ($query) use ($storeId) {
+                $query->where('storeId', $storeId);
+            })->paginate(10);
+        }
         return view('manager.item.index', compact('items'));
     }
 
     public function create()
     {
-        $categories = Category::all();
+
+        if(auth()->user()->hasRole('admin')){
+            $categories = Category::all();
+        }
+        else{
+            $managerId = Auth::guard('staff')->user()->staffId;
+            $storeId = Store::where('managerId', $managerId)
+                ->value('storeId');
+            $categories = Category::where('storeId', $storeId)->get();
+
+        }
         return view('manager.item.create', compact('categories'));
+
     }
 
     public function store(Request $request)

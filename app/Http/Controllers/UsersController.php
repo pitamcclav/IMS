@@ -2,30 +2,95 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Inventory;
 use App\Models\Item;
 use App\Models\Request;
+use App\Models\Staff;
+use App\Models\Store;
 use Illuminate\Http\Request as HttpRequest;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class UsersController extends Controller
 {
 
     public function manager()
     {
-        $inventoryItemsCount = Inventory::count();
-        $pendingRequestsCount = Request::where('status', 'Pending')->count();
-        $itemsCount = Item::count();
+        $managerId = Auth::guard('staff')->user()->staffId;
 
-        $inventoryData = Inventory::select('itemId', 'quantity as quantity')->get()->toArray();
+        $storeId = Store::where('managerId', $managerId)
+            ->value('storeId');
+
+        $inventoryItemsCount = Inventory::where('storeId', $storeId)
+            ->count();
+
+        $pendingRequestsCount = Request::where('storeId', $storeId)
+            ->where('status', 'Pending')
+            ->count();
+
+
+        $categories = Category::where('storeId', $storeId)
+            ->get();
+
+        $itemsCount = 0;
+        foreach ($categories as $category) {
+            $category->itemsCount = Item::where('categoryId', $category->categoryId)
+                ->count();
+            $itemsCount += $category->itemsCount;
+        }
+
+        $inventoryData = Inventory::select('itemId', 'quantity as quantity')->where('storeId', $storeId)->get();
 
         return view('manager.dashboard', compact('inventoryItemsCount', 'pendingRequestsCount', 'inventoryData', 'itemsCount'));
     }
     public function admin()
     {
-        return view('admin.dashboard');
+        // Query active sessions to get currently logged-in users
+        $activeSessions = DB::table('sessions')
+            ->whereNotNull('user_id')
+            ->count();
+
+        $usersCount = Staff::count();
+        $storesCount = Store::count();
+        $itemsCount = Item::count();
+
+        // Fetch data for users pie chart
+        $usersData = [
+            'totalUsers' => $usersCount,
+            'activeUsers' => $activeSessions,
+            'inactiveUsers' => $usersCount - $activeSessions,
+        ];
+
+        // Fetch data for items pie chart by summing quantities from the inventory table
+        $itemsData = Item::withSum('inventory as quantity', 'quantity')
+            ->get(['id', 'name'])
+            ->map(function($item) {
+                return [
+                    'itemName' => $item->itemName,
+                    'quantity' => $item->quantity
+                ];
+            })
+            ->toArray();
+
+        return view('admin.dashboard', compact('usersCount', 'storesCount', 'itemsCount', 'activeSessions', 'usersData', 'itemsData'));
     }
+
     public function staff()
     {
-        return view('staff.dashboard');
+        $staffId = Auth::guard('staff')->user()->staffId;
+
+        // Fetch requests associated with the authenticated staff member
+        $requestsCount = Request::where('staffId', $staffId)->count();
+        $pendingRequestsCount = Request::where('staffId', $staffId)->where('status', 'Pending')->count();
+
+        // Fetch the last 5 requests for the authenticated staff member
+        $recentRequests = Request::where('staffId', $staffId)
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+
+        return view('staff.dashboard', compact('requestsCount', 'pendingRequestsCount', 'recentRequests'));
     }
+
 }

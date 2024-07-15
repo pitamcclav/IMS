@@ -5,13 +5,23 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Store;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 
 class CategoryController extends Controller
 {
     public function index()
     {
-        $categories = Category::all();
+        if(auth()->user()->hasRole('admin')){
+            $categories = Category::all();
+        }
+        else{
+            $managerId = Auth::guard('staff')->user()->staffId;
+            $storeId = Store::where('managerId', $managerId)
+                ->value('storeId');
+            $categories = Category::where('storeId', $storeId)->get();
+
+        }
         return view('manager.category.index', compact('categories'));
     }
 
@@ -31,7 +41,7 @@ class CategoryController extends Controller
 
         // Get the currently authenticated manager
         $manager = auth()->user();
-        $store = Store::where('staffId', $manager->staffId)->first();
+        $store = Store::where('managerId', $manager->staffId)->first();
 
 
         // Check if the manager is attached to a store

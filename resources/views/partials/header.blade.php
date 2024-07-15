@@ -9,13 +9,18 @@
     </div>
     <ul class="sidebar-nav">
         <li class="sidebar-item">
-            <a href="@if (Auth::guard('staff')->check() && Auth::guard('staff')->user()->role == 'admin') {{ route('admin.dashboard') }}
-                     @elseif (Auth::guard('staff')->check() && Auth::guard('staff')->user()->role == 'manager') {{ route('manager.dashboard') }}
-                     @elseif (Auth::guard('staff')->check() && Auth::guard('staff')->user()->role == 'staff') {{ route('staff.dashboard') }}
-                     @endif" class="sidebar-link">
-                <i class="lni lni-dashboard"></i>
-                <span>Dashboard</span>
-            </a>
+            @auth('staff')
+                    <a href="
+    @if(auth('staff')->user()->hasRole('admin'))
+                        {{route('admin.dashboard')}}
+    @elseif(auth('staff')->user()->hasRole('staff'))
+                            {{route('staff.dashboard')}}
+    @elseif(auth('staff')->user()->hasRole('manager'))
+                            {{route('manager.dashboard')}}
+    @endif" class="sidebar-link">
+                    <i class="lni lni-dashboard"></i>
+                    <span>Dashboard</span> </a>
+                @endauth
         </li>
         <li class="sidebar-item">
             <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
@@ -32,8 +37,7 @@
                 </li>
             </ul>
         </li>
-        @if (Auth::guard('staff')->check() && Auth::guard('staff')->user()->role == 'manager')
-            <!-- Manager-specific items -->
+        @can('manage categories')
             <li class="sidebar-item">
                 <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
                    data-bs-target="#categories" aria-expanded="false" aria-controls="categories">
@@ -49,10 +53,9 @@
                     </li>
                 </ul>
             </li>
-        @endif
+        @endcan
 
-        @if (Auth::guard('staff')->check() && in_array(Auth::guard('staff')->user()->role, ['admin', 'manager']))
-            <!-- Common items for Admin and Manager -->
+        @can('manage inventory')
             <li class="sidebar-item">
                 <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
                    data-bs-target="#inventory" aria-expanded="false" aria-controls="inventory">
@@ -68,7 +71,9 @@
                     </li>
                 </ul>
             </li>
+        @endcan
 
+        @can('manage items')
             <li class="sidebar-item">
                 <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
                    data-bs-target="#items" aria-expanded="false" aria-controls="items">
@@ -77,13 +82,16 @@
                 </a>
                 <ul id="items" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                     <li class="sidebar-item">
-                        <a href="{{route('item.index')}}" class="sidebar-link">Item List<i class="lni lni-chevron-right"></i></a>
+                        <a href="{{ route('item.index') }}" class="sidebar-link">Item List<i class="lni lni-chevron-right"></i></a>
                     </li>
                     <li class="sidebar-item">
-                        <a href="{{route('item.create')}}" class="sidebar-link">Add New Item<i class="lni lni-chevron-right"></i></a>
+                        <a href="{{ route('item.create') }}" class="sidebar-link">Add New Item<i class="lni lni-chevron-right"></i></a>
                     </li>
                 </ul>
             </li>
+        @endcan
+
+        @can('manage suppliers')
             <li class="sidebar-item">
                 <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
                    data-bs-target="#suppliers" aria-expanded="false" aria-controls="suppliers">
@@ -92,38 +100,43 @@
                 </a>
                 <ul id="suppliers" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                     <li class="sidebar-item">
-                        <a href="{{route('supplier.index')}}" class="sidebar-link">Supplier List<i class="lni lni-chevron-right"></i></a>
+                        <a href="{{ route('supplier.index') }}" class="sidebar-link">Supplier List<i class="lni lni-chevron-right"></i></a>
                     </li>
                     <li class="sidebar-item">
-                        <a href="{{route('supplier.create')}}" class="sidebar-link">Add New Supplier<i class="lni lni-chevron-right"></i></a>
+                        <a href="{{ route('supplier.create') }}" class="sidebar-link">Add New Supplier<i class="lni lni-chevron-right"></i></a>
                     </li>
                 </ul>
             </li>
+        @endcan
+
+        @can('manage order limits')
             <li class="sidebar-item">
                 <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
                    data-bs-target="#order-limits" aria-expanded="false" aria-controls="order-limits">
                     <i class="lni lni-layers"></i>
-                    <span>Order Limits </span>
+                    <span>Order Limits</span>
                 </a>
                 <ul id="order-limits" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                     <li class="sidebar-item">
-                        <a href="{{route('orderLimit.index')}}" class="sidebar-link">Order Limits List<i class="lni lni-chevron-right"></i></a>
+                        <a href="{{ route('orderLimit.index') }}" class="sidebar-link">Order Limits List<i class="lni lni-chevron-right"></i></a>
                     </li>
                     <li class="sidebar-item">
-                        <a href="{{route('orderLimit.create')}}" class="sidebar-link">Add New Order Limit<i class="lni lni-chevron-right"></i></a>
+                        <a href="{{ route('orderLimit.create') }}" class="sidebar-link">Add New Order Limit<i class="lni lni-chevron-right"></i></a>
                     </li>
                 </ul>
             </li>
+        @endcan
+
+        @can('generate reports')
             <li class="sidebar-item">
                 <a href="{{ route('report.index') }}" class="sidebar-link">
                     <i class="lni lni-files"></i>
                     <span>Reports</span>
                 </a>
             </li>
-        @endif
+        @endcan
 
-        @if (Auth::guard('staff')->check() && Auth::guard('staff')->user()->role == 'admin')
-            <!-- Admin-specific items -->
+        @can('manage staff')
             <li class="sidebar-item">
                 <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
                    data-bs-target="#user-management" aria-expanded="false" aria-controls="user-management">
@@ -132,26 +145,14 @@
                 </a>
                 <ul id="user-management" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                     <li class="sidebar-item">
-                        <a href="{{route('users.index')}}" class="sidebar-link">Users<i class="lni lni-chevron-right"></i></a>
+                        <a href="{{ route('users.index') }}" class="sidebar-link">Users<i class="lni lni-chevron-right"></i></a>
                     </li>
                     <li class="sidebar-item">
-                        <a href="" class="sidebar-link">Roles<i class="lni lni-chevron-right"></i></a>
-                    </li>
-                    <li class="sidebar-item">
-                        <a href="{{route('stores')}}" class="sidebar-link">Stores<i class="lni lni-chevron-right"></i></a>
+                        <a href="{{ route('stores') }}" class="sidebar-link">Stores<i class="lni lni-chevron-right"></i></a>
                     </li>
                 </ul>
             </li>
-            <!-- Additional Admin Specific Items -->
-        @endif
-
-
-
-        @if (Auth::guard('staff')->check() && Auth::guard('staff')->user()->role == 'staff')
-            <!-- Staff-specific items -->
-
-        @endif
-
+        @endcan
 
     </ul>
     <div class="sidebar-footer">

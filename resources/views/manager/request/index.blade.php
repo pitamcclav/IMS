@@ -39,27 +39,27 @@
                                     <td>{{ $request->staff->staffName ?? 'N/A' }}</td>
                                     <td>
                                         <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#viewRequestModal{{ $request->requestId }}">View</button>
-                                        @if ($request->status != 'picked')
-                                            @if(auth()->user()->role == 'staff' && $request->status == 'pending')
+                                        @if(auth()->user()->hasRole('staff'))
+                                            @if($request->status == 'pending')
                                                 <a href="{{ route('requests.edit', $request->requestId) }}" class="btn btn-warning btn-sm">Edit</a>
-                                                <button class="btn btn-danger btn-sm delete-button"
-                                                        data-url="{{ route('requests.destroy', $request->requestId) }}">Delete
-                                                </button>
+                                                <button class="btn btn-danger btn-sm delete-button" data-url="{{ route('requests.destroy', $request->requestId) }}">Delete</button>
                                             @endif
-                                            @if(auth()->user()->role == 'admin' || auth()->user()->role == 'manager')
-                                                <form action="{{ route('requests.updateStatus', $request->requestId) }}" method="POST" class="d-inline">
-                                                    @csrf
-                                                    @method('PATCH')
-                                                    @if ($request->status == 'pending')
-                                                        <input type="hidden" name="status" value="ready">
-                                                        <button type="submit" class="btn btn-success btn-sm">Mark as Ready</button>
-                                                    @elseif ($request->status == 'ready')
-                                                        <input type="hidden" name="status" value="picked">
-                                                        <button type="submit" class="btn btn-primary btn-sm">Mark as Picked</button>
-                                                    @endif
-                                                </form>
-                                            @endif
+                                        @elseif(auth()->user()->hasRole('manager') || auth()->user()->hasRole('admin'))
+                                            <a href="{{ route('requests.edit', $request->requestId) }}" class="btn btn-warning btn-sm">Edit</a>
+                                            <button class="btn btn-danger btn-sm delete-button" data-url="{{ route('requests.destroy', $request->requestId) }}">Delete</button>
+                                            <form action="{{ route('requests.updateStatus', $request->requestId) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                @method('PATCH')
+                                                @if ($request->status == 'pending')
+                                                    <input type="hidden" name="status" value="ready">
+                                                    <button type="submit" class="btn btn-success btn-sm">Mark as Ready</button>
+                                                @elseif ($request->status == 'ready')
+                                                    <input type="hidden" name="status" value="picked">
+                                                    <button type="submit" class="btn btn-primary btn-sm">Mark as Picked</button>
+                                                @endif
+                                            </form>
                                         @endif
+
                                     </td>
                                 </tr>
 

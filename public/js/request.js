@@ -7,6 +7,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const colourOptions = document.getElementById('colourOptions').innerHTML;
     const sizeOptions = document.getElementById('sizeOptions').innerHTML;
 
+    // Function to fetch items
+    function fetchItems(storeId, callback) {
+        fetch(`/fetch-items/${storeId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => callback(data))
+            .catch(error => console.error('Error fetching items:', error));
+    }
+
     // Function to fetch colours based on selected item
     function fetchColours(itemId, callback) {
         fetch(`/fetch-colours/${itemId}`)
@@ -28,6 +41,30 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(error => console.error('Error fetching sizes:', error));
     }
 
+    // Add event listener to store dropdown
+    // Add event listener to store dropdown
+    document.getElementById('store').addEventListener('change', function() {
+        const storeId = this.value;
+        const itemSelect = document.getElementById('item');
+        const colourSelect = document.getElementById('colour');
+        const sizeSelect = document.getElementById('size');
+
+        // Fetch items based on store selection
+        fetchItems(storeId, items => {
+            itemSelect.innerHTML = '<option value="" disabled selected>Select Item</option>';
+
+            items.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.itemId;
+                option.textContent = item.itemName;
+                itemSelect.appendChild(option);
+            });
+
+            // Reset colour and size dropdowns
+            colourSelect.innerHTML = '<option value="" disabled selected>Select Colour</option>';
+            sizeSelect.innerHTML = '<option value="" disabled selected>Select Size</option>';
+        });
+    });
 
     // Add event listener to item dropdowns
     document.querySelectorAll('.item-select').forEach(itemSelect => {
@@ -319,8 +356,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         console.log(organizedData);
 
-        var staffId = $('#staffId').val() ? $('#staffId').val() : null;
+        var staffId = $('#staff').val() ? $('#staff').val() : null;
+        var storeId = $('#store').val() ? $('#store').val() : null;
         console.log(staffId);
+        console.log(storeId);
         // You can now send organizedData to the backend using AJAX or a form submission
         // Example with AJAX:
         $.ajax({
@@ -330,7 +369,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') // If using Laravel
             },
-            data: JSON.stringify({ data: organizedData, staffId: staffId}),
+            data: JSON.stringify({ data: organizedData, staffId: staffId, storeId: storeId }),
             success: function(response) {
                 // Handle the response from the server
                 console.log('Success:', response);

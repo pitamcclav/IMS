@@ -1,3 +1,5 @@
+<!-- resources/views/user-management.blade.php -->
+
 @extends('layouts.app')
 
 @section('title', 'User Management')
@@ -29,13 +31,21 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-
                                 @foreach($staff as $user)
                                     <tr>
                                         <td>{{ $user->staffId }}</td>
                                         <td>{{ $user->staffName }}</td>
                                         <td>{{ $user->email }}</td>
-                                        <td>{{ $user->role }}</td>
+                                        <td>
+                                            @if($user->roles->isNotEmpty())
+                                                @foreach($user->roles as $role)
+                                                    {{ $role->name }}
+                                                @endforeach
+                                            @else
+                                                <button type="button" class="btn btn-primary btn-sm assign-role-btn"
+                                                        data-userid="{{ $user->staffId }}" data-username="{{ $user->staffName }}">Assign</button>
+                                            @endif
+                                        </td>
                                         <td>
                                             <a href="{{ route('users.edit', $user->staffId) }}" class="btn btn-warning btn-sm">Edit</a>
                                             <form action="{{ route('users.destroy', $user->staffId) }}" method="POST" class="d-inline">
@@ -43,6 +53,13 @@
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this user?')">Delete</button>
                                             </form>
+                                            @if($user->roles->isNotEmpty())
+                                                <form action="{{ route('roles.revoke', $user->staffId) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    @method('POST')
+                                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to revoke roles for this user?')">Revoke</button>
+                                                </form>
+                                            @endif
                                         </td>
                                     </tr>
                                 @endforeach
@@ -57,4 +74,12 @@
             </div>
         </div>
     </div>
+
+    <!-- Assign Role Modal -->
+    @include('partials.modals.assign-role')
+@endsection
+
+@section('scripts')
+    <script src="{{asset('js/admin.js')}}">
+    </script>
 @endsection

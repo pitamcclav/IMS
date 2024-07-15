@@ -25,7 +25,7 @@
                         Inventory Levels
                     </div>
                     <div class="card-body">
-                        <h5 class="card-title">Total Items: {{ $inventoryItemsCount }}</h5>
+                        <h5 class="card-title">Total Inventory: {{ $inventoryItemsCount }}</h5>
                         <p class="card-text">View detailed inventory levels.</p>
                         <a href="{{ route('inventory.index') }}" class="btn btn-primary">View Inventory</a>
                     </div>

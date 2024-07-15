@@ -9,23 +9,35 @@
         <form  method="POST">
             @csrf
             <div class="form-group">
-                <label for="staff">Staff</label>
-                <select id="staff" name="staffId" class="form-control" {{ auth()->user()->role == 'staff' || auth()->user()->role == 'admin' ? 'disabled' : '' }}>
-                    <option value="" disabled>Select Staff</option>
-                    @foreach($staffs as $staff)
-                        @if(auth()->user()->role == 'staff' || auth()->user()->role == 'admin')
-                            <option value="{{ $staff->staffId }}" {{ auth()->user()->staffId == $staff->staffId ? 'selected' : '' }} {{ auth()->user()->staffId == $staff->staffId ? 'disabled' : '' }}>{{ $staff->staffName }}</option>
-                        @else
-                            <option value="{{ $staff->staffId }}">{{ $staff->staffName }}</option>
-                        @endif
+                <label for="store">Store</label>
+                <select id="store" name="storeId" class="form-control" required>
+                    <option value="" selected disabled>Select Store</option>
+                    @foreach($stores as $store)
+                        <option value="{{ $store->storeId }}">{{ $store->storeName }}</option>
                     @endforeach
                 </select>
             </div>
+            <div class="form-group">
+                <label for="staff">Staff</label>
+                <select id="staff" name="staffId" class="form-control" {{ auth()->user()->hasRole(['staff', 'supervisor']) ? 'disabled' : '' }}>
+                    <option value="" selected disabled>Select Staff</option>
+                    @foreach($staffs as $staff)
+                        @php
+                            $isCurrentUser = auth()->user()->staffId == $staff->staffId;
+                            $shouldDisableOption = $isCurrentUser && auth()->user()->hasRole(['staff', 'admin']);
+                        @endphp
+                        <option value="{{ $staff->staffId }}" {{ $isCurrentUser ? 'selected' : '' }} {{ $shouldDisableOption ? 'disabled' : '' }}>
+                            {{ $staff->staffName }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
             <hr>
             <div id="requestDetailsContainer">
                 <div class="requestDetail mb-3">
                     <label for="item">Item</label>
-                    <select name="itemIds[]" class="form-control item-select">
+                    <select id="item" name="itemIds[]" class="form-control item-select">
                         <option value="" disabled selected>Select Item</option>
                         @foreach($items as $item)
                             <option value="{{ $item->itemId }}">{{ $item->itemName }}</option>
@@ -46,7 +58,7 @@
                             <tbody>
                             <tr class="variant-row">
                                 <td>
-                                    <select name="colourIds[]" class="form-control colour-select">
+                                    <select name="colourIds[]" class="form-control colour-select" id="colour">
                                         <option value="" disabled selected>Select Colour</option>
                                         @foreach($colours as $colour)
                                             <option value="{{ $colour->colourId }}">{{ $colour->colourName }}</option>
@@ -55,7 +67,7 @@
                                 </td>
 
                                 <td>
-                                    <select name="sizeIds[]" class="form-control size-select">
+                                    <select name="sizeIds[]" class="form-control size-select" id="size">
                                         <option value="" disabled selected>Select Size</option>
                                         @foreach($sizes as $size)
                                             <option value="{{ $size->sizeId }}">{{ $size->sizeValue }}</option>

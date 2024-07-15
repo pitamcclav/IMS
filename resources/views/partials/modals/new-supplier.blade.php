@@ -13,7 +13,7 @@
                     </div>
                     <div class="form-group">
                         <label for="supplierContact">Supplier Contact</label>
-                        <input type="text" id="newSupplierContact" name="supplierContact" class="form-control" required>
+                        <input type="email" id="newSupplierContact" name="supplierContact" class="form-control" required>
                     </div>
                     <button type="submit" class="btn btn-primary">Save Supplier</button>
                 </form>

@@ -17,7 +17,9 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->string('role')->default('not assigned');
+            $table->unsignedBigInteger('supervisorId')->nullable();
+            $table->foreign('supervisorId')->references('staffId')
+                ->on('staff')->onDelete('no action');
             $table->timestamps();
         });
 

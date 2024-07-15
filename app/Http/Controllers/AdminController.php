@@ -7,16 +7,20 @@ use App\Models\Staff;
 
 use App\Models\Store;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\ValidationException;
+use Spatie\Permission\Models\Role;
 
 class AdminController extends Controller
 {
     public function index()
     {
-        $staff = Staff::all();
-        return view('admin.user', compact('staff'));
+        $roles = Role::all();
+        $staff = Staff::with('roles')->get();
+        return view('admin.user', compact('staff', 'roles'));
     }
 
     public function create()
@@ -32,7 +36,6 @@ class AdminController extends Controller
                 'staffName' => 'required|string|max:255',
                 'email' => 'required|email|unique:staff,email|max:255',
                 'password' => 'required|string|min:8|confirmed',
-                'role' => 'required|string|in:admin,staff,manager',
             ]);
 
             // Create a new Staff instance and save it to the database
@@ -40,7 +43,6 @@ class AdminController extends Controller
             $staff->staffName = $validatedData['staffName'];
             $staff->email = $validatedData['email'];
             $staff->password = Hash::make($validatedData['password']);
-            $staff->role = $validatedData['role'];
             $staff->save();
 
             // Redirect to the users index with a success message
@@ -104,14 +106,13 @@ class AdminController extends Controller
 
     public function stores()
     {
-        $stores = Store::with('staff')->get();
+        $stores = Store::with('manager')->get();
         $staff = Staff::all();
         return view('admin.stores', compact('stores', 'staff'));
     }
 
     public function addStore(Request $request)
     {
-
 
         $request->validate([
             'storeName' => 'required|string|max:255',
@@ -125,7 +126,7 @@ class AdminController extends Controller
 
         $store = Store::create([
             'storeName' => $request->storeName,
-            'staffId' => $request->staffId ?? null,
+            'managerId' => $request->staffId ?? null,
             'location' => $request->location,
         ]);
 
@@ -136,7 +137,10 @@ class AdminController extends Controller
     public function editStore($id)
     {
         $store = Store::find($id);
-        $staff = Staff::all();
+        $staff = Staff::whereHas('roles', function ($query) {
+            $query->where('name', 'manager');
+        })->get();
+
         return view('admin.editStore', compact('store', 'staff'));
     }
 
@@ -149,7 +153,7 @@ class AdminController extends Controller
 
         $store = Store::find($request->id);
         $store->storeName = $request->storeName;
-        $store->staffId = $request->staffId ?? null;
+        $store->managerId = $request->staffId ?? null;
         $store->location = $request->location;
         $store->save();
 
@@ -162,6 +166,32 @@ class AdminController extends Controller
         $store->delete();
 
         return response()->json(['success' => true]);
+    }
+
+    public function assignRoles(Request $request)
+    {
+        Log::info($request);
+        $staff = Staff::findOrFail($request->staff_id);
+        $roles = $request->roles;
+        Log::info($roles);
+        Log::info($staff);
+
+        DB::transaction(function () use ($staff, $roles) {
+            $staff->assignRole($roles);
+        });
+
+        return response()->json(['status' => 'success']);
+    }
+
+    public function revokeRoles(Request $request, $staffId)
+    {
+        $staff = Staff::findOrFail($staffId);
+
+        DB::transaction(function () use ($staff) {
+            $staff->roles()->detach();
+        });
+
+        return redirect()->back()->with('status', 'Roles revoked successfully!');
     }
 
 

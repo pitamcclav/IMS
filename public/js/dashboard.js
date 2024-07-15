@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     var inventoryLabels = inventoryData.map(function(item) {
-        return 'Item ' + item.itemId;
+        return  item.itemName;
     });
     var inventoryQuantities = inventoryData.map(function(item) {
         return item.quantity;
@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }]
         },
         options: {
+            maintainAspectRatio: false,
             responsive: true
         }
     });
@@ -56,6 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }]
         },
         options: {
+            maintainAspectRatio: false,
             responsive: true
         }
     });

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7e8c3c14ff33b199b4a0838993eb8423",
+    "content-hash": "f571f0eddb6954bf81e1c3ca0b505a8a",
     "packages": [
         {
             "name": "brick/math",
@@ -137,16 +137,16 @@
         },
         {
             "name": "dflydev/dot-access-data",
-            "version": "v3.0.2",
+            "version": "v3.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/dflydev/dflydev-dot-access-data.git",
-                "reference": "f41715465d65213d644d3141a6a93081be5d3549"
+                "reference": "a23a2bf4f31d3518f3ecb38660c95715dfead60f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/dflydev/dflydev-dot-access-data/zipball/f41715465d65213d644d3141a6a93081be5d3549",
-                "reference": "f41715465d65213d644d3141a6a93081be5d3549",
+                "url": "https://api.github.com/repos/dflydev/dflydev-dot-access-data/zipball/a23a2bf4f31d3518f3ecb38660c95715dfead60f",
+                "reference": "a23a2bf4f31d3518f3ecb38660c95715dfead60f",
                 "shasum": ""
             },
             "require": {
@@ -206,9 +206,9 @@
             ],
             "support": {
                 "issues": "https://github.com/dflydev/dflydev-dot-access-data/issues",
-                "source": "https://github.com/dflydev/dflydev-dot-access-data/tree/v3.0.2"
+                "source": "https://github.com/dflydev/dflydev-dot-access-data/tree/v3.0.3"
             },
-            "time": "2022-10-27T11:44:00+00:00"
+            "time": "2024-07-08T12:26:09+00:00"
         },
         {
             "name": "doctrine/inflector",
@@ -1052,16 +1052,16 @@
         },
         {
             "name": "laravel/framework",
-            "version": "v11.14.0",
+            "version": "v11.15.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/framework.git",
-                "reference": "657e8464e13147d56bc3a399115c8c26f38d4821"
+                "reference": "ba85f1c019bed59b3c736c9c4502805efd0ba84b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/framework/zipball/657e8464e13147d56bc3a399115c8c26f38d4821",
-                "reference": "657e8464e13147d56bc3a399115c8c26f38d4821",
+                "url": "https://api.github.com/repos/laravel/framework/zipball/ba85f1c019bed59b3c736c9c4502805efd0ba84b",
+                "reference": "ba85f1c019bed59b3c736c9c4502805efd0ba84b",
                 "shasum": ""
             },
             "require": {
@@ -1167,7 +1167,7 @@
                 "nyholm/psr7": "^1.2",
                 "orchestra/testbench-core": "^9.1.5",
                 "pda/pheanstalk": "^5.0",
-                "phpstan/phpstan": "^1.4.7",
+                "phpstan/phpstan": "^1.11.5",
                 "phpunit/phpunit": "^10.5|^11.0",
                 "predis/predis": "^2.0.2",
                 "resend/resend-php": "^0.10.0",
@@ -1254,7 +1254,7 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
-            "time": "2024-07-02T17:23:58+00:00"
+            "time": "2024-07-09T15:38:12+00:00"
         },
         {
             "name": "laravel/prompts",
@@ -3109,6 +3109,88 @@
             "time": "2024-04-27T21:32:50+00:00"
         },
         {
+            "name": "spatie/laravel-permission",
+            "version": "6.9.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/spatie/laravel-permission.git",
+                "reference": "fe973a58b44380d0e8620107259b7bda22f70408"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/spatie/laravel-permission/zipball/fe973a58b44380d0e8620107259b7bda22f70408",
+                "reference": "fe973a58b44380d0e8620107259b7bda22f70408",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/auth": "^8.12|^9.0|^10.0|^11.0",
+                "illuminate/container": "^8.12|^9.0|^10.0|^11.0",
+                "illuminate/contracts": "^8.12|^9.0|^10.0|^11.0",
+                "illuminate/database": "^8.12|^9.0|^10.0|^11.0",
+                "php": "^8.0"
+            },
+            "require-dev": {
+                "laravel/passport": "^11.0|^12.0",
+                "orchestra/testbench": "^6.23|^7.0|^8.0|^9.0",
+                "phpunit/phpunit": "^9.4|^10.1"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "6.x-dev",
+                    "dev-master": "6.x-dev"
+                },
+                "laravel": {
+                    "providers": [
+                        "Spatie\\Permission\\PermissionServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "files": [
+                    "src/helpers.php"
+                ],
+                "psr-4": {
+                    "Spatie\\Permission\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Freek Van der Herten",
+                    "email": "freek@spatie.be",
+                    "homepage": "https://spatie.be",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Permission handling for Laravel 8.0 and up",
+            "homepage": "https://github.com/spatie/laravel-permission",
+            "keywords": [
+                "acl",
+                "laravel",
+                "permission",
+                "permissions",
+                "rbac",
+                "roles",
+                "security",
+                "spatie"
+            ],
+            "support": {
+                "issues": "https://github.com/spatie/laravel-permission/issues",
+                "source": "https://github.com/spatie/laravel-permission/tree/6.9.0"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/spatie",
+                    "type": "github"
+                }
+            ],
+            "time": "2024-06-22T23:04:52+00:00"
+        },
+        {
             "name": "symfony/clock",
             "version": "v7.1.1",
             "source": {
@@ -3703,6 +3785,178 @@
             "time": "2024-05-31T14:57:53+00:00"
         },
         {
+            "name": "symfony/http-client",
+            "version": "v7.1.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/http-client.git",
+                "reference": "90ace27d17ccc9afc6f7ec0081e8529fb0e29425"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/http-client/zipball/90ace27d17ccc9afc6f7ec0081e8529fb0e29425",
+                "reference": "90ace27d17ccc9afc6f7ec0081e8529fb0e29425",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.2",
+                "psr/log": "^1|^2|^3",
+                "symfony/deprecation-contracts": "^2.5|^3",
+                "symfony/http-client-contracts": "^3.4.1",
+                "symfony/service-contracts": "^2.5|^3"
+            },
+            "conflict": {
+                "php-http/discovery": "<1.15",
+                "symfony/http-foundation": "<6.4"
+            },
+            "provide": {
+                "php-http/async-client-implementation": "*",
+                "php-http/client-implementation": "*",
+                "psr/http-client-implementation": "1.0",
+                "symfony/http-client-implementation": "3.0"
+            },
+            "require-dev": {
+                "amphp/amp": "^2.5",
+                "amphp/http-client": "^4.2.1",
+                "amphp/http-tunnel": "^1.0",
+                "amphp/socket": "^1.1",
+                "guzzlehttp/promises": "^1.4|^2.0",
+                "nyholm/psr7": "^1.0",
+                "php-http/httplug": "^1.0|^2.0",
+                "psr/http-client": "^1.0",
+                "symfony/dependency-injection": "^6.4|^7.0",
+                "symfony/http-kernel": "^6.4|^7.0",
+                "symfony/messenger": "^6.4|^7.0",
+                "symfony/process": "^6.4|^7.0",
+                "symfony/rate-limiter": "^6.4|^7.0",
+                "symfony/stopwatch": "^6.4|^7.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\HttpClient\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Provides powerful methods to fetch HTTP resources synchronously or asynchronously",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "http"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/http-client/tree/v7.1.2"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2024-06-28T08:00:31+00:00"
+        },
+        {
+            "name": "symfony/http-client-contracts",
+            "version": "v3.5.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/http-client-contracts.git",
+                "reference": "20414d96f391677bf80078aa55baece78b82647d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/http-client-contracts/zipball/20414d96f391677bf80078aa55baece78b82647d",
+                "reference": "20414d96f391677bf80078aa55baece78b82647d",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.1"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "3.5-dev"
+                },
+                "thanks": {
+                    "name": "symfony/contracts",
+                    "url": "https://github.com/symfony/contracts"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Contracts\\HttpClient\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Test/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Generic abstractions related to HTTP clients",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "abstractions",
+                "contracts",
+                "decoupling",
+                "interfaces",
+                "interoperability",
+                "standards"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/http-client-contracts/tree/v3.5.0"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2024-04-18T09:32:20+00:00"
+        },
+        {
             "name": "symfony/http-foundation",
             "version": "v7.1.1",
             "source": {
@@ -3956,6 +4210,75 @@
             "homepage": "https://symfony.com",
             "support": {
                 "source": "https://github.com/symfony/mailer/tree/v7.1.2"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2024-06-28T08:00:31+00:00"
+        },
+        {
+            "name": "symfony/mailgun-mailer",
+            "version": "v7.1.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/mailgun-mailer.git",
+                "reference": "d5dcf1cbbc29cf43c979b9ed8a7ff509c903c64f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/mailgun-mailer/zipball/d5dcf1cbbc29cf43c979b9ed8a7ff509c903c64f",
+                "reference": "d5dcf1cbbc29cf43c979b9ed8a7ff509c903c64f",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.2",
+                "symfony/mailer": "^6.4|^7.0"
+            },
+            "conflict": {
+                "symfony/http-foundation": "<6.4"
+            },
+            "require-dev": {
+                "symfony/http-client": "^6.4|^7.0",
+                "symfony/webhook": "^6.4|^7.0"
+            },
+            "type": "symfony-mailer-bridge",
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Mailer\\Bridge\\Mailgun\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony Mailgun Mailer Bridge",
+            "homepage": "https://symfony.com",
+            "support": {
+                "source": "https://github.com/symfony/mailgun-mailer/tree/v7.1.2"
             },
             "funding": [
                 {
@@ -5866,16 +6189,16 @@
         },
         {
             "name": "laravel/pint",
-            "version": "v1.16.1",
+            "version": "v1.16.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/pint.git",
-                "reference": "9266a47f1b9231b83e0cfd849009547329d871b1"
+                "reference": "51f1ba679a6afe0315621ad143d788bd7ded0eca"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/pint/zipball/9266a47f1b9231b83e0cfd849009547329d871b1",
-                "reference": "9266a47f1b9231b83e0cfd849009547329d871b1",
+                "url": "https://api.github.com/repos/laravel/pint/zipball/51f1ba679a6afe0315621ad143d788bd7ded0eca",
+                "reference": "51f1ba679a6afe0315621ad143d788bd7ded0eca",
                 "shasum": ""
             },
             "require": {
@@ -5928,20 +6251,20 @@
                 "issues": "https://github.com/laravel/pint/issues",
                 "source": "https://github.com/laravel/pint"
             },
-            "time": "2024-06-18T16:50:05+00:00"
+            "time": "2024-07-09T15:58:08+00:00"
         },
         {
             "name": "laravel/sail",
-            "version": "v1.30.1",
+            "version": "v1.30.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/sail.git",
-                "reference": "8ba049b6c06e0330b6aa1fb7af2746fb4da445e4"
+                "reference": "f5a9699a1001e15de1aa5e7cb5c9f50a3f63f887"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/sail/zipball/8ba049b6c06e0330b6aa1fb7af2746fb4da445e4",
-                "reference": "8ba049b6c06e0330b6aa1fb7af2746fb4da445e4",
+                "url": "https://api.github.com/repos/laravel/sail/zipball/f5a9699a1001e15de1aa5e7cb5c9f50a3f63f887",
+                "reference": "f5a9699a1001e15de1aa5e7cb5c9f50a3f63f887",
                 "shasum": ""
             },
             "require": {
@@ -5991,7 +6314,7 @@
                 "issues": "https://github.com/laravel/sail/issues",
                 "source": "https://github.com/laravel/sail"
             },
-            "time": "2024-07-01T20:55:03+00:00"
+            "time": "2024-07-05T16:01:51+00:00"
         },
         {
             "name": "mockery/mockery",
@@ -6676,16 +6999,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "11.2.6",
+            "version": "11.2.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "1dc0fedac703199e8704de085e47dd46bac0dde4"
+                "reference": "15c7e69dec4a8f246840859e6b430bd2abeb5039"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/1dc0fedac703199e8704de085e47dd46bac0dde4",
-                "reference": "1dc0fedac703199e8704de085e47dd46bac0dde4",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/15c7e69dec4a8f246840859e6b430bd2abeb5039",
+                "reference": "15c7e69dec4a8f246840859e6b430bd2abeb5039",
                 "shasum": ""
             },
             "require": {
@@ -6695,25 +7018,25 @@
                 "ext-mbstring": "*",
                 "ext-xml": "*",
                 "ext-xmlwriter": "*",
-                "myclabs/deep-copy": "^1.10.1",
-                "phar-io/manifest": "^2.0.3",
-                "phar-io/version": "^3.0.2",
+                "myclabs/deep-copy": "^1.12.0",
+                "phar-io/manifest": "^2.0.4",
+                "phar-io/version": "^3.2.1",
                 "php": ">=8.2",
-                "phpunit/php-code-coverage": "^11.0",
-                "phpunit/php-file-iterator": "^5.0",
-                "phpunit/php-invoker": "^5.0",
-                "phpunit/php-text-template": "^4.0",
-                "phpunit/php-timer": "^7.0",
-                "sebastian/cli-parser": "^3.0",
-                "sebastian/code-unit": "^3.0",
-                "sebastian/comparator": "^6.0",
-                "sebastian/diff": "^6.0",
-                "sebastian/environment": "^7.0",
-                "sebastian/exporter": "^6.1.2",
-                "sebastian/global-state": "^7.0",
-                "sebastian/object-enumerator": "^6.0",
-                "sebastian/type": "^5.0",
-                "sebastian/version": "^5.0"
+                "phpunit/php-code-coverage": "^11.0.5",
+                "phpunit/php-file-iterator": "^5.0.1",
+                "phpunit/php-invoker": "^5.0.1",
+                "phpunit/php-text-template": "^4.0.1",
+                "phpunit/php-timer": "^7.0.1",
+                "sebastian/cli-parser": "^3.0.2",
+                "sebastian/code-unit": "^3.0.1",
+                "sebastian/comparator": "^6.0.1",
+                "sebastian/diff": "^6.0.2",
+                "sebastian/environment": "^7.2.0",
+                "sebastian/exporter": "^6.1.3",
+                "sebastian/global-state": "^7.0.2",
+                "sebastian/object-enumerator": "^6.0.1",
+                "sebastian/type": "^5.0.1",
+                "sebastian/version": "^5.0.1"
             },
             "suggest": {
                 "ext-soap": "To be able to generate mocks based on WSDL files"
@@ -6756,7 +7079,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/11.2.6"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/11.2.7"
             },
             "funding": [
                 {
@@ -6772,7 +7095,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-07-03T05:51:49+00:00"
+            "time": "2024-07-10T11:50:09+00:00"
         },
         {
             "name": "sebastian/cli-parser",

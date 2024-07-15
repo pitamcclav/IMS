@@ -9,17 +9,6 @@
                 <h1 class="h3 mb-3 text-gray-800">Add User</h1>
             </div>
         </div>
-
-        @if($errors->any())
-            <div class="alert alert-danger">
-                <ul>
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
         <form method="POST" action="{{ route('users.store') }}">
             @csrf
             <div class="row">
@@ -44,14 +33,6 @@
                             <div class="mb-3">
                                 <label for="password_confirmation" class="form-label">Confirm Password</label>
                                 <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="role" class="form-label">Role</label>
-                                <select class="form-select" id="role" name="role" required>
-                                    <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
-                                    <option value="staff" {{ old('role') == 'staff' ? 'selected' : '' }}>Staff</option>
-                                    <option value="manager" {{ old('role') == 'manager' ? 'selected' : '' }}>Manager</option>
-                                </select>
                             </div>
                         </div>
                     </div>

@@ -19,6 +19,8 @@ return new class extends Migration
                 ->on('category')
                 ->onDelete('no action')
                 ->cascadeOnUpdate();
+            $table->integer('quantity')->nullable();
+            $table->integer('initialQuantity')->nullable();
             $table->text('description');
             $table->timestamps();
         });

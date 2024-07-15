@@ -30,6 +30,15 @@
 
             <!-- Main Content -->
             <div class="container-fluid main p-3">
+                @if($errors->any())
+                    <div class="alert alert-danger">
+                        <ul>
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
                 @if(Session::has('success'))
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
                         {{ Session::get('success') }}

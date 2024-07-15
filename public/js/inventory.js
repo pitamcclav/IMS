@@ -21,7 +21,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-
     // Add client-side validation for quantity
     document.querySelector('input[name="quantities[]"]').addEventListener('input', function () {
         let quantity = this.value.trim();
@@ -45,6 +44,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }).ajaxStop(function () {
         $('#loadingSpinner').hide();
     });
+
+    function updateSelectOptions(selectName, newOption) {
+        const selects = document.querySelectorAll(`select[name="${selectName}"]`);
+        selects.forEach(select => {
+            select.insertAdjacentHTML('beforeend', `<option value="${newOption.value}">${newOption.text}</option>`);
+        });
+    }
 
     // Handle form submissions for modals
     document.getElementById('newSupplierForm').addEventListener('submit', function (e) {
@@ -120,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function () {
             },
             success: function(response) {
                 if (response.success) {
-                    $('#colourid').append(new Option(response.colour.colourName, response.colour.colourId));
+                    updateSelectOptions('colourIds[]', { value: response.colour.colourId, text: response.colour.colourName });
                     $('#newColorModal').modal('hide');
                     document.getElementById('newColorName').value = '';
                     alert('Color added successfully');
@@ -146,7 +152,7 @@ document.addEventListener('DOMContentLoaded', function () {
             },
             success: function(response) {
                 if (response.success) {
-                    $('#sizeid').append(new Option(response.size.sizeValue, response.size.sizeId));
+                    updateSelectOptions('sizeIds[]', { value: response.size.sizeId, text: response.size.sizeValue });
                     $('#newSizeModal').modal('hide');
                     document.getElementById('newSizeValue').value = '';
                     alert('Size added successfully');
@@ -182,7 +188,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 </select>
             </td>
             <td>
-                <div class="d-flex align-items-center" >
+                <div class="d-flex align-items-center">
                     <button type="button" class="btn btn-outline-secondary minus-quantity">-</button>
                     <input type="number" name="quantities[]" class="form-control mx-2 text-center" value="1" min="1">
                     <button type="button" class="btn btn-outline-secondary plus-quantity">+</button>
