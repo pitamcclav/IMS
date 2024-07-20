@@ -3,7 +3,7 @@
 @section('content')
     <div class="container">
         <h1>Add New Inventory Item</h1>
-        <form action="{{ route('inventory.store') }}" method="POST" >
+        <form action="{{ route('inventory.store') }}" method="POST"  enctype="multipart/form-data">
             @csrf
 
             <div class="form-group">
@@ -76,8 +76,11 @@
                     </table>
                 </div>
             </div>
-            <button type="button" class="btn btn-secondary my-4" id="addInventoryBtn">Add Variant</button>
-            <button type="submit" class="btn btn-primary">Add</button>
+            <button type="button" class="btn btn-secondary btn-sm my-4" id="addInventoryBtn">Add Variant</button>
+            <div class="file-loading my-4">
+                <input id="input-711" name="kartik-input-711[]" type="file" multiple>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm my-4">Submit</button>
         </form>
     </div>
 
@@ -90,6 +93,25 @@
 @endsection
 
 @section('scripts')
+    <script>
+        $(document).ready(function() {
+            $("#input-711").fileinput({
+                maxFileCount: 5,
+                showBrowse: true,
+                showUpload: false,
+                required: true,
+                browseOnZoneClick: true,
+                initialPreviewAsData: true,
+                overwriteInitial: false,
+            });
+
+
+        });
+
+
+    </script>
+
+
     <script>
         const sizes = @json($sizes);
         const colours = @json($colours);

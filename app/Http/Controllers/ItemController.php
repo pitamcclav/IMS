@@ -62,7 +62,16 @@ class ItemController extends Controller
 
     public function edit(Item $item)
     {
-        $categories = Category::all();
+        if(auth()->user()->hasRole('admin')){
+            $categories = Category::all();
+        }
+        else{
+            $managerId = Auth::guard('staff')->user()->staffId;
+            $storeId = Store::where('managerId', $managerId)
+                ->value('storeId');
+            $categories = Category::where('storeId', $storeId)->get();
+
+        }
         return view('manager.item.edit', compact('item', 'categories'));
     }
 

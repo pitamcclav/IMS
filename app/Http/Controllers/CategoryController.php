@@ -43,6 +43,10 @@ class CategoryController extends Controller
         $manager = auth()->user();
         $store = Store::where('managerId', $manager->staffId)->first();
 
+        if($store == null){
+            Session::flash('error', 'You are not assigned to any store.');
+            return redirect()->route('category.index');
+        }
 
         // Check if the manager is attached to a store
         if ($manager && $store->storeId) {

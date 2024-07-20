@@ -1,9 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     "use strict";
 
-    // Log inventory data content for debugging
-    console.log(document.getElementById('inventoryData').textContent);
-    console.log(document.getElementById('pendingRequestsCount').textContent);
 
     // Data for Inventory Chart
     try {

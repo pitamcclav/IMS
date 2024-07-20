@@ -25,6 +25,7 @@ return new class extends Migration
                 ->onDelete('no action');
             $table->integer('quantity');
             $table->date('supplyDate');
+            $table->string('delivery_notes',1000)->nullable(); // Add a column for delivery notes
             $table->timestamps();
         });
 

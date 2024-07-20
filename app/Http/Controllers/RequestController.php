@@ -213,6 +213,7 @@ class RequestController extends Controller
 
     public function edit(InventoryRequest $request)
     {
+
         $items = Item::all();
         $staffs = Staff::all();
         $colours = Colour::all();

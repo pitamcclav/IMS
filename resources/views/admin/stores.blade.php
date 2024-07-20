@@ -10,7 +10,7 @@
                 <button class="btn btn-primary btn-sm"  id="newStore" data-bs-toggle="modal" data-bs-target="#newStoreModal">Add
                     New Store
                 </button>
-                <table class="table" id="storeTable">
+                <table class="table table-responsive table-bordered my-4 table-striped" id="storeTable">
                     <thead>
                     <tr>
                         <th>ID</th>

@@ -7,7 +7,7 @@
         <div class="row mb-3">
             <div class="col">
                 <h1 class="h3 mb-3 text-gray-800">Request Management</h1>
-                <a href="{{ route('requests.create') }}" class="btn btn-primary">Add New Request</a>
+                <a href="{{ route('requests.create') }}" class="btn btn-sm btn-primary">Add New Request</a>
             </div>
         </div>
 
@@ -22,9 +22,9 @@
                             <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Date</th>
-                                <th>Status</th>
                                 <th>Staff</th>
+                                <th>Status</th>
+                                <th>Date</th>
                                 <th>Actions</th>
                             </tr>
                             </thead>
@@ -32,35 +32,52 @@
                             @foreach($requests as $index => $request)
                                 <tr>
                                     <td>{{ $index + 1 }}</td>
-                                    <td>{{ $request->date }}</td>
-                                    <td>
-                                        <span class="status-label {{ strtolower($request->status) }}">{{ $request->status }}</span>
-                                    </td>
                                     <td>{{ $request->staff->staffName ?? 'N/A' }}</td>
                                     <td>
-                                        <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#viewRequestModal{{ $request->requestId }}">View</button>
+                                        <span class="status-label">
+                                            <span class="status-dot status-{{ strtolower($request->status) }}"></span>
+
+                                        </span>
+                                    </td>
+                                    <td>{{ $request->date }}</td>
+                                    <td>
+                                        <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#viewRequestModal{{ $request->requestId }}">
+                                            <i class="lni lni-eye"></i> <!-- Line Icon for 'eye' -->
+                                        </button>
                                         @if(auth()->user()->hasRole('staff'))
                                             @if($request->status == 'pending')
-                                                <a href="{{ route('requests.edit', $request->requestId) }}" class="btn btn-warning btn-sm">Edit</a>
-                                                <button class="btn btn-danger btn-sm delete-button" data-url="{{ route('requests.destroy', $request->requestId) }}">Delete</button>
+                                                <a href="{{ route('requests.edit', $request->requestId) }}" class="btn btn-warning btn-sm">
+                                                    <i class="lni lni-pencil"></i> <!-- Line Icon for 'pencil' -->
+                                                </a>
+                                                <button class="btn btn-danger btn-sm delete-button" data-url="{{ route('requests.destroy', $request->requestId) }}">
+                                                    <i class="lni lni-trash"></i> <!-- Line Icon for 'trash' -->
+                                                </button>
                                             @endif
                                         @elseif(auth()->user()->hasRole('manager') || auth()->user()->hasRole('admin'))
-                                            <a href="{{ route('requests.edit', $request->requestId) }}" class="btn btn-warning btn-sm">Edit</a>
-                                            <button class="btn btn-danger btn-sm delete-button" data-url="{{ route('requests.destroy', $request->requestId) }}">Delete</button>
+                                            <a href="{{ route('requests.edit', $request->requestId) }}" class="btn btn-warning btn-sm">
+                                                <i class="lni lni-pencil"></i> <!-- Line Icon for 'pencil' -->
+                                            </a>
+                                            <button class="btn btn-danger btn-sm delete-button" data-url="{{ route('requests.destroy', $request->requestId) }}">
+                                                <i class="lni lni-trash-can"></i> <!-- Line Icon for 'trash' -->
+                                            </button>
                                             <form action="{{ route('requests.updateStatus', $request->requestId) }}" method="POST" class="d-inline">
                                                 @csrf
                                                 @method('PATCH')
                                                 @if ($request->status == 'pending')
                                                     <input type="hidden" name="status" value="ready">
-                                                    <button type="submit" class="btn btn-success btn-sm">Mark as Ready</button>
+                                                    <button type="submit" class="btn btn-success btn-sm">
+                                                        <i class="lni lni-checkmark"></i> <!-- Line Icon for 'checkmark' -->
+                                                    </button>
                                                 @elseif ($request->status == 'ready')
                                                     <input type="hidden" name="status" value="picked">
-                                                    <button type="submit" class="btn btn-primary btn-sm">Mark as Picked</button>
+                                                    <button type="submit" class="btn btn-primary btn-sm">
+                                                        <i class="lni lni-checkmark-circle"></i> <!-- Line Icon for 'checkmark-circle' -->
+                                                    </button>
                                                 @endif
                                             </form>
                                         @endif
-
                                     </td>
+
                                 </tr>
 
                                 <!-- Modal for Viewing Request Details -->

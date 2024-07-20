@@ -37,9 +37,9 @@
                                         <td>{{ $item->category->categoryName }}</td>
                                         <td>{{ $item->inventory->sum('quantity') }}</td>
                                         <td>
-                                            <a href="{{ route('item.edit', $item->itemId) }}" class="btn btn-warning btn-sm">Edit</a>
+                                            <a href="{{ route('item.edit', $item->itemId) }}" class="btn btn-warning btn-sm"><i class="lni lni-pencil"></i></a>
                                             <button class="btn btn-danger delete-button btn-sm"
-                                                    data-url="{{ route('item.destroy', $item->itemId) }}">Delete
+                                                    data-url="{{ route('item.destroy', $item->itemId) }}"><i class="lni lni-trash-can"></i>
                                             </button>
                                         </td>
                                     </tr>

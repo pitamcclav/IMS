@@ -7,7 +7,7 @@
         <div class="row mb-3">
             <div class="col">
                 <h1 class="h3 mb-3 text-gray-800">Supplier Management</h1>
-                <a href="{{ route('supplier.create') }}" class="btn btn-primary">Add New Supplier</a>
+                <a href="{{ route('supplier.create') }}" class="btn btn-sm btn-primary">Add New Supplier</a>
             </div>
         </div>
 
@@ -37,13 +37,13 @@
                                     <td>
                                         <!-- View Button -->
                                         <button class="btn btn-info btn-sm view-btn" data-supplier="{{json_encode($supplier)}}" data-bs-toggle="modal" data-bs-target="#viewSupplierModal">
-                                            View
+                                            <i class="lni lni-eye"></i>
                                         </button>
                                         <!-- Edit Button -->
-                                        <a href="{{ route('supplier.edit', $supplier->supplierId) }}" class="btn btn-warning btn-sm">Edit</a>
+                                        <a href="{{ route('supplier.edit', $supplier->supplierId) }}" class="btn btn-warning btn-sm"><i class="lni lni-pencil"></i></a>
                                         <!-- Delete button -->
                                         <button class="btn btn-danger btn-sm delete-button"
-                                                data-url="{{ route('supplier.destroy', $supplier->supplierId) }}">Delete
+                                                data-url="{{ route('supplier.destroy', $supplier->supplierId) }}"><i class="lni lni-trash-can"></i>
                                         </button>
                                     </td>
                                 </tr>
@@ -75,6 +75,7 @@
                             <th>Item</th>
                             <th>Quantity</th>
                             <th>Supply Date</th>
+                            <th>Delivery Note</th>
                         </tr>
                         </thead>
                         <tbody id="supplyDetails">

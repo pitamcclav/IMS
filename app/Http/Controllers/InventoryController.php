@@ -13,7 +13,10 @@ use App\Models\Supply;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class InventoryController extends Controller
 {
@@ -62,13 +65,14 @@ class InventoryController extends Controller
 
     public function store(Request $request)
     {
-        print_r($request->all());
-
+        // Validate the request data
         $request->validate([
             'itemid' => 'required',
+            'supplierid' => 'required',
             'colourIds' => 'required|array',
             'sizeIds' => 'required|array',
             'quantities' => 'required|array',
+            'kartik-input-711.*' => 'required|file|mimes:jpg,png,jpeg,pdf,docx|max:5000',
         ]);
 
         // Find the category and store of the item
@@ -101,14 +105,41 @@ class InventoryController extends Controller
             }
         });
 
-        $quantity = $request->quantities;
+        // Handle file uploads
+        $uploadedFiles = [];
+        if ($request->hasFile('kartik-input-711')) {
+            $files = $request->file('kartik-input-711');
+            foreach ($files as $file) {
+                // Generate a unique file ID
+                $fileId = Str::uuid();
 
-//        Fill supply table
-        Supply::create([
+                // Determine the file extension
+                $extension = $file->getClientOriginalExtension();
+
+                // Define the path with file ID and extension
+                $path = 'delivery-notes/' . $fileId . '.' . $extension;
+
+                // Store the file with the generated file ID
+                $file->storeAs('public/delivery-notes', $fileId . '.' . $extension);
+
+                // Store the path and ID for reference
+                $uploadedFiles[] = [
+                    'id' => $fileId,
+                    'path' => $path,
+                    'original_name' => $file->getClientOriginalName()
+                ];
+            }
+            Log::info('Uploaded files: ' . json_encode($uploadedFiles));
+
+        }
+
+        // Save file paths to the supply table
+        $supply = Supply::create([
             'itemId' => $request->itemid,
             'supplierId' => $request->supplierid,
-            'quantity' => array_sum($quantity),
+            'quantity' => array_sum($request->quantities),
             'supplyDate' => Carbon::now(),
+            'delivery_notes' => json_encode($uploadedFiles), // Save the uploaded file paths as JSON
         ]);
 
         Session::flash('success', 'Inventory item added successfully.');
@@ -144,6 +175,9 @@ class InventoryController extends Controller
         }
 
     }
+
+
+
 
 
     public function edit(Inventory $inventory)

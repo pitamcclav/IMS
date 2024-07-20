@@ -28,7 +28,13 @@ li a {
     padding: 2rem;
     background-color: var(--color-light);
 }
+.container-fluid h2{
+    font-weight: 700;
+    font-size: 2.0rem;
+    color: var(--color-header);
+    margin-bottom: 1rem;
 
+}
 .wrapper {
     display: flex;
 }
@@ -40,6 +46,14 @@ li a {
     transition: all 0.35s ease-in-out;
     background-color: #fafbfe;
 }
+
+aside hr{
+    margin: 0;
+    border: 0;
+    border-top: 1px solid #ccc;
+
+}
+
 
 #sidebar {
     width: 75px;
@@ -175,6 +189,14 @@ a.sidebar-link:hover {
     font-size: 1.0rem;
     font-weight: 600;
     text-decoration: none;
+}
+.sidebar-footer p{
+    color: #FFF;
+    font-size: 1.1rem;
+    font-weight: 400;
+    text-align: center;
+    margin-left: 0;
+
 }
 
 /* Card styling */
@@ -316,3 +338,29 @@ a.sidebar-link:hover {
     background-color: #fff;
     border-color: #dee2e6;
 }
+.status-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 5px;
+    vertical-align: middle;
+}
+
+.status-pending {
+    background-color: #ffc107; /* yellow */
+}
+
+.status-ready {
+    background-color: #28a745; /* green */
+}
+
+.status-picked {
+    background-color: #007bff; /* blue */
+}
+
+.status-label {
+    display: inline-flex;
+    align-items: center;
+}
+

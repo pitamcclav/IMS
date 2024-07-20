@@ -13,25 +13,26 @@
                 <select id="store" name="storeId" class="form-control" required>
                     <option value="" selected disabled>Select Store</option>
                     @foreach($stores as $store)
-                        <option value="{{ $store->storeId }}">{{ $store->storeName }}</option>
+                        <option value="{{ $store->storeId }}" data-manager-id="{{ $store->managerId }}">{{ $store->storeName }}</option>
                     @endforeach
                 </select>
             </div>
+
             <div class="form-group">
                 <label for="staff">Staff</label>
-                <select id="staff" name="staffId" class="form-control" {{ auth()->user()->hasRole(['staff', 'supervisor']) ? 'disabled' : '' }}>
+                <select id="staff" name="staffId" class="form-control">
                     <option value="" selected disabled>Select Staff</option>
                     @foreach($staffs as $staff)
                         @php
                             $isCurrentUser = auth()->user()->staffId == $staff->staffId;
-                            $shouldDisableOption = $isCurrentUser && auth()->user()->hasRole(['staff', 'admin']);
                         @endphp
-                        <option value="{{ $staff->staffId }}" {{ $isCurrentUser ? 'selected' : '' }} {{ $shouldDisableOption ? 'disabled' : '' }}>
+                        <option value="{{ $staff->staffId }}" {{ $isCurrentUser ? 'selected' : '' }}>
                             {{ $staff->staffName }}
                         </option>
                     @endforeach
                 </select>
             </div>
+
 
             <hr>
             <div id="requestDetailsContainer">
@@ -121,5 +122,31 @@
 @endsection
 
 @section('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const storeSelect = document.getElementById('store');
+            const staffSelect = document.getElementById('staff');
+            const userRole = "{{ auth()->user()->getRoleNames()->first() }}";
+            const userId = "{{ auth()->user()->staffId }}";
+
+            function updateStaffField() {
+                if (userRole === 'staff' || userRole === 'supervisor') {
+                    staffSelect.disabled = true;
+                } else if (userRole === 'manager') {
+                    const selectedStore = storeSelect.options[storeSelect.selectedIndex];
+                    const managerId = selectedStore.getAttribute('data-manager-id');
+
+                    staffSelect.disabled = managerId !== userId;
+                } else if (userRole === 'admin') {
+                    staffSelect.disabled = false;
+                }
+            }
+
+            storeSelect.addEventListener('change', updateStaffField);
+
+            // Initial check
+            updateStaffField();
+        });
+    </script>
     <script src="{{ asset('js/request.js') }}"></script>
 @endsection

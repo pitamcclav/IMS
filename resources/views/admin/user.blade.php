@@ -47,12 +47,10 @@
                                             @endif
                                         </td>
                                         <td>
-                                            <a href="{{ route('users.edit', $user->staffId) }}" class="btn btn-warning btn-sm">Edit</a>
-                                            <form action="{{ route('users.destroy', $user->staffId) }}" method="POST" class="d-inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this user?')">Delete</button>
-                                            </form>
+                                            <a href="{{ route('users.edit', $user->staffId) }}" class="btn btn-warning btn-sm"><i class="lni lni-pencil"></i></a>
+
+                                                <button type="submit" class="btn btn-danger delete-button btn-sm" data-url="{{ route('users.destroy', $user->staffId) }}"><i class="lni lni-trash-can"></i></button>
+
                                             @if($user->roles->isNotEmpty())
                                                 <form action="{{ route('roles.revoke', $user->staffId) }}" method="POST" class="d-inline">
                                                     @csrf

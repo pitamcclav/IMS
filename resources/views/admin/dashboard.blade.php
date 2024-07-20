@@ -4,17 +4,18 @@
 
 @section('content')
     <div class="container-fluid">
+        <h2>Admin Dashboard</h2>
         <div class="row">
             <!-- Users Count -->
             <div class="col-md-4 mb-4">
                 <div class="card">
-                    <div class="card-header bg-info text-white">
+                    <div class="card-header bg-light text-black">
                         Users
                     </div>
                     <div class="card-body">
-                        <h5 class="card-title text-info">Total Users: {{ $usersCount }}</h5>
+                        <h5 class="card-title text-black">Total Users: {{ $usersCount }}</h5>
                         <p class="card-text">View detailed user information.</p>
-                        <a href="{{ route('users.index') }}" class="btn btn-info">View Users</a>
+                        <a href="{{ route('users.index') }}" class="btn btn-sm btn-primary">View Users</a>
                     </div>
                 </div>
             </div>
@@ -22,13 +23,13 @@
             <!-- Stores Count -->
             <div class="col-md-4 mb-4">
                 <div class="card">
-                    <div class="card-header bg-success text-white">
+                    <div class="card-header text-black">
                         Stores
                     </div>
                     <div class="card-body">
-                        <h5 class="card-title text-success">Total Stores: {{ $storesCount }}</h5>
+                        <h5 class="card-title text-black">Total Stores: {{ $storesCount }}</h5>
                         <p class="card-text">View detailed store information.</p>
-                        <a href="{{ route('stores') }}" class="btn btn-success">View Stores</a>
+                        <a href="{{ route('stores') }}" class="btn btn-primary btn-sm">View Stores</a>
                     </div>
                 </div>
             </div>
@@ -36,13 +37,13 @@
             <!-- Items Count -->
             <div class="col-md-4 mb-4">
                 <div class="card">
-                    <div class="card-header bg-warning text-white">
+                    <div class="card-header text-black">
                         Items
                     </div>
                     <div class="card-body">
-                        <h5 class="card-title text-warning">Total Items: {{ $itemsCount }}</h5>
+                        <h5 class="card-title text-black">Total Items: {{ $itemsCount }}</h5>
                         <p class="card-text">View detailed item information.</p>
-                        <a href="{{ route('item.index') }}" class="btn btn-warning">View Items</a>
+                        <a href="{{ route('item.index') }}" class="btn btn-primary btn-sm">View Items</a>
                     </div>
                 </div>
             </div>

@@ -101,7 +101,8 @@ class AdminController extends Controller
         $user = Staff::find($id);
         $user->delete();
 
-        return redirect()->route('users.index')->with('success', 'User deleted successfully.');
+        return response()->json(['success' => true]);
+
     }
 
     public function stores()

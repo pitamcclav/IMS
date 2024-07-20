@@ -11,7 +11,7 @@ class Supply extends Model
 
     protected $table = 'supply';
     protected $primaryKey = 'supplyId';
-    protected $fillable = ['supplierId', 'itemId', 'quantity', 'supplyDate'];
+    protected $fillable = ['supplierId', 'itemId', 'quantity', 'supplyDate','delivery_notes'];
 
     public function supplier()
     {
