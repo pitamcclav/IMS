@@ -45,8 +45,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 url: deleteUrl,
                 type: 'DELETE',
                 success: function (response) {
-                    // Reload the page or update the UI as needed
-                    window.location.reload();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Deleted!',
+                        text: 'The item has been deleted successfully.',
+                        confirmButtonText: 'Okay'
+                    }).then(() => {
+                        // Reload the page or update the UI as needed
+                        window.location.reload();
+                    });
                 },
                 error: function (response) {
                     console.log(response);

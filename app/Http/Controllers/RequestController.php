@@ -17,6 +17,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Validation\ValidationException;
 
 
 class RequestController extends Controller
@@ -79,58 +80,105 @@ class RequestController extends Controller
 
     public function store(Request $request)
     {
-        if (auth()->user()->hasRole('staff')) {
-            $request['staffId'] = auth()->user()->staffId;
-        } elseif ((auth()->user()->hasRole('manager') || auth()->user()->hasRole('admin')) && $request->staffId == null) {
-            $request['staffId'] = auth()->user()->staffId;
-        }
-
-
-        // Log the request data for debugging
-        Log::info('Request data', $request->all());
-
-        // Validate the incoming request data
-        $request->validate([
-            'data' => 'required|array',
-            'data.*.itemId' => 'required|exists:item,itemId',
-            'data.*.quantity' => 'required|integer|min:1',
-            'data.*.colourId' => 'required|exists:colour,colourId',
-            'data.*.sizeId' => 'required|exists:size,sizeId',
-            'staffId' => 'required|exists:staff,staffId',
-            'storeId' => 'required|exists:store,storeId',
-        ]);
-
-
-        // Use a database transaction to ensure data integrity
-        \DB::transaction(function () use ($request) {
-            // Create the inventory request
-            $inventoryRequest = InventoryRequest::create([
-                'date' => Carbon::now(),
-                'status' => 'pending',
-                'staffId' => $request->staffId,
-                'storeId' => $request->storeId,
-            ]);
-
-            // Create each request detail
-            foreach ($request->data as $detail) {
-                Log::info('Request detail', ['detail' => $detail]);
-                RequestDetail::create([
-                    'requestId' => $inventoryRequest->requestId,
-                    'itemId' => $detail['itemId'],
-                    'quantity' => $detail['quantity'],
-                    'colourId' => $detail['colourId'],
-                    'sizeId' => $detail['sizeId'],
-                ]);
+        try {
+            if (auth()->user()->hasRole('staff')) {
+                $request['staffId'] = auth()->user()->staffId;
+            } elseif ((auth()->user()->hasRole('manager') || auth()->user()->hasRole('admin')) && $request->staffId == null) {
+                $request['staffId'] = auth()->user()->staffId;
             }
 
-            // Dispatch the notification job
-            SendRequestNotification::dispatch($inventoryRequest, $request->staffId, $request->storeId);
-        });
+            // Log the request data for debugging
+            Log::info('Request data', $request->all());
 
+            // Validate the incoming request data
+            $validatedData = $request->validate([
+                'data' => 'required|array',
+                'data.*.itemId' => 'required|exists:item,itemId',
+                'data.*.quantity' => 'required|integer|min:1',
+                'data.*.colourId' => 'required|exists:colour,colourId',
+                'data.*.sizeId' => 'required|exists:size,sizeId',
+                'staffId' => 'required|exists:staff,staffId',
+                'storeId' => 'required|exists:store,storeId',
+            ]);
 
+            // Use a database transaction to ensure data integrity
+            \DB::transaction(function () use ($request) {
+                // Create the inventory request
+                $inventoryRequest = InventoryRequest::create([
+                    'date' => Carbon::now(),
+                    'status' => 'pending',
+                    'staffId' => $request->staffId,
+                    'storeId' => $request->storeId,
+                ]);
 
-        return response()->json(['success' => true, 'redirect_url' => route('requests.index')]);
+                // Create each request detail and adjust inventory and item quantities
+                foreach ($request->data as $detail) {
+                    Log::info('Request detail', ['detail' => $detail]);
+
+                    // Create request detail
+                    RequestDetail::create([
+                        'requestId' => $inventoryRequest->requestId,
+                        'itemId' => $detail['itemId'],
+                        'quantity' => $detail['quantity'],
+                        'colourId' => $detail['colourId'],
+                        'sizeId' => $detail['sizeId'],
+                    ]);
+
+                    // Adjust inventory quantities
+                    $inventory = Inventory::where('itemId', $detail['itemId'])
+                        ->where('colourId', $detail['colourId'])
+                        ->where('sizeId', $detail['sizeId'])
+                        ->first();
+
+                    if ($inventory) {
+                        $inventory->quantity -= $detail['quantity'];
+                        $inventory->save();
+
+                        // Adjust item quantities
+                        $item = Item::find($detail['itemId']);
+                        if ($item) {
+                            $item->quantity -= $detail['quantity'];
+                            $item->save();
+                        }
+                    } else {
+                        // Handle case where inventory item is not found (optional)
+                        Log::warning('Inventory item not found for store.', $detail);
+                    }
+                }
+
+                // Dispatch the notification job
+                SendRequestNotification::dispatch($inventoryRequest, $request->staffId, $request->storeId);
+            });
+
+            return response()->json(['success' => true, 'redirect_url' => route('requests.index')]);
+
+        } catch (ValidationException $e) {
+            // Capture and log validation errors
+            $errors = $e->validator->errors();
+            Log::error('Validation errors while creating request: ', $errors->toArray());
+
+            // Return JSON response for AJAX requests
+            if ($request->ajax()) {
+                return response()->json(['success' => false, 'errors' => $errors->toArray()]);
+            }
+
+            // Redirect back with validation errors
+            return redirect()->back()->withErrors($errors)->withInput();
+
+        } catch (\Exception $e) {
+            // Capture and log general errors
+            Log::error('Error creating request: ' . $e->getMessage());
+
+            // Return JSON response for AJAX requests
+            if ($request->ajax()) {
+                return response()->json(['success' => false, 'error' => 'An error occurred while creating the request. Please try again.']);
+            }
+
+            // Redirect back with error message
+            return redirect()->back()->with('error', 'An error occurred while creating the request. Please try again.');
+        }
     }
+
 
 
     public function updateStatus(Request $request, $inventoryRequest)
@@ -173,6 +221,13 @@ class RequestController extends Controller
                     // Subtract the requested quantity from the inventory
                     $inventory->quantity -= $detail['quantity'];
                     $inventory->save();
+
+                    // Also update the item quantity in the items table
+                    $item = Item::find($detail['itemId']);
+                    if ($item) {
+                        $item->quantity -= $detail['quantity'];
+                        $item->save();
+                    }
 
                     // Check if the stock drops below 3/4 of the original quantity
                     $originalQuantity = $inventory->initialQuantity; // assuming you have this field
@@ -223,30 +278,79 @@ class RequestController extends Controller
 
     public function update(Request $request, $inventoryRequest)
     {
-        $request->validate([
-            'itemIds' => 'required|array',
-            'quantities' => 'required|array',
-            'colourIds' => 'required|array',
-            'sizeIds' => 'required|array',
-        ]);
-
-        // Retrieve the InventoryRequest instance
-        $inventoryRequest = InventoryRequest::findOrFail($inventoryRequest);
-
-        // Update the request details
-        RequestDetail::where('requestId', $inventoryRequest->requestId)->delete();
-        foreach ($request->itemIds as $index => $itemId) {
-            RequestDetail::create([
-                'requestId' => $inventoryRequest->requestId,
-                'itemId' => $itemId,
-                'quantity' => $request->quantities[$index],
-                'colourId' => $request->colourIds[$index],
-                'sizeId' => $request->sizeIds[$index],
+        try {
+            // Validate the incoming request data
+            $validatedData = $request->validate([
+                'itemIds' => 'required|array',
+                'quantities' => 'required|array',
+                'colourIds' => 'required|array',
+                'sizeIds' => 'required|array',
             ]);
-        }
 
-        Session::flash('success', 'Request updated successfully.');
-        return redirect()->route('requests.index');
+            // Retrieve the InventoryRequest instance
+            $inventoryRequest = InventoryRequest::findOrFail($inventoryRequest);
+
+            // Use a database transaction to ensure data integrity
+            \DB::transaction(function () use ($request, $inventoryRequest) {
+                // Remove existing request details
+                RequestDetail::where('requestId', $inventoryRequest->requestId)->delete();
+
+                // Update inventory and item quantities
+                foreach ($request->itemIds as $index => $itemId) {
+                    $quantity = $request->quantities[$index];
+                    $colourId = $request->colourIds[$index];
+                    $sizeId = $request->sizeIds[$index];
+
+                    // Create new request details
+                    RequestDetail::create([
+                        'requestId' => $inventoryRequest->requestId,
+                        'itemId' => $itemId,
+                        'quantity' => $quantity,
+                        'colourId' => $colourId,
+                        'sizeId' => $sizeId,
+                    ]);
+
+                    // Adjust inventory quantities
+                    $inventory = Inventory::where('itemId', $itemId)
+                        ->where('colourId', $colourId)
+                        ->where('sizeId', $sizeId)
+                        ->first();
+
+                    if ($inventory) {
+                        $inventory->quantity -= $quantity;
+                        $inventory->save();
+
+                        // Adjust item quantities
+                        $item = Item::find($itemId);
+                        if ($item) {
+                            $item->quantity -= $quantity;
+                            $item->save();
+                        }
+                    } else {
+                        // Handle case where inventory item is not found (optional)
+                        Log::warning('Inventory item not found for update.', compact('itemId', 'colourId', 'sizeId'));
+                    }
+                }
+            });
+
+            Session::flash('success', 'Request updated successfully.');
+            return redirect()->route('requests.index');
+
+        } catch (ValidationException $e) {
+            // Capture and log validation errors
+            $errors = $e->validator->errors();
+            Log::error('Validation errors while updating request: ', $errors->toArray());
+
+            // Redirect back with validation errors
+            return redirect()->back()->withErrors($errors)->withInput();
+
+        } catch (\Exception $e) {
+            // Capture and log general errors
+            Log::error('Error updating request: ' . $e->getMessage());
+
+            // Redirect back with error message
+            return redirect()->back()->with('error', 'An error occurred while updating the request. Please try again.');
+        }
     }
 
     public function destroy($id)

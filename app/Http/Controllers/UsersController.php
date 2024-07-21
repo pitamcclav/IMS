@@ -8,7 +8,6 @@ use App\Models\Item;
 use App\Models\Request;
 use App\Models\Staff;
 use App\Models\Store;
-use Illuminate\Http\Request as HttpRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -19,31 +18,38 @@ class UsersController extends Controller
     {
         $managerId = Auth::guard('staff')->user()->staffId;
 
-        $storeId = Store::where('managerId', $managerId)
-            ->value('storeId');
+        $storeId = Store::where('managerId', $managerId)->value('storeId');
 
-        $inventoryItemsCount = Inventory::where('storeId', $storeId)
-            ->count();
+        $inventoryItemsCount = Inventory::where('storeId', $storeId)->count();
 
         $pendingRequestsCount = Request::where('storeId', $storeId)
             ->where('status', 'Pending')
             ->count();
 
+        // Get all categories for the store
+        $categories = Category::where('storeId', $storeId)->with('items')->get();
 
-        $categories = Category::where('storeId', $storeId)
-            ->get();
-
+        // Initialize the items count and inventory data
         $itemsCount = 0;
-        foreach ($categories as $category) {
-            $category->itemsCount = Item::where('categoryId', $category->categoryId)
-                ->count();
-            $itemsCount += $category->itemsCount;
-        }
+        $inventoryData = [];
 
-        $inventoryData = Inventory::select('itemId', 'quantity as quantity')->where('storeId', $storeId)->get();
+        foreach ($categories as $category) {
+            // Count items in the category
+            $category->itemsCount = $category->items->count();
+            $itemsCount += $category->itemsCount;
+
+            // Append category items to inventoryData
+            foreach ($category->items as $item) {
+                $inventoryData[] = [
+                    'itemName' => $item->itemName,
+                    'quantity' => $item->quantity
+                ];
+            }
+        }
 
         return view('manager.dashboard', compact('inventoryItemsCount', 'pendingRequestsCount', 'inventoryData', 'itemsCount'));
     }
+
     public function admin()
     {
         // Query active sessions to get currently logged-in users

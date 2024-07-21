@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     "use strict";
 
+    // const Swal = require('sweetalert2');
     const addItemBtn = document.getElementById('addItemBtn');
     const requestDetailsContainer = document.getElementById('requestDetailsContainer');
     const itemOptions = document.getElementById('itemOptions').innerHTML;
@@ -376,9 +377,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Redirect based on the response
                 if (response.success) {
-                    window.location.href = response.redirect_url;
-                } else {
-                    alert(response.message || 'An error occurred.');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Request Submitted!',
+                        text: 'The request has been successfully submitted.',
+                        confirmButtonText: 'Okay'
+                    }).then(() => {
+                        window.location.href = response.redirect_url;
+                    });
+                    } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: response.message || 'An error occurred.',
+                        confirmButtonText: 'Okay'
+                    });
+
                 }
             },
             error: function(error) {

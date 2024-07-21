@@ -50,7 +50,7 @@
                                                     <i class="lni lni-pencil"></i> <!-- Line Icon for 'pencil' -->
                                                 </a>
                                                 <button class="btn btn-danger btn-sm delete-button" data-url="{{ route('requests.destroy', $request->requestId) }}">
-                                                    <i class="lni lni-trash"></i> <!-- Line Icon for 'trash' -->
+                                                    <i class="lni lni-trash-can"></i> <!-- Line Icon for 'trash' -->
                                                 </button>
                                             @endif
                                         @elseif(auth()->user()->hasRole('manager') || auth()->user()->hasRole('admin'))

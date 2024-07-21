@@ -12,7 +12,7 @@ class Item extends Model
     protected $table = 'item';
 
     protected $primaryKey = 'itemId';
-    protected $fillable = ['categoryId', 'itemName', 'description'];
+    protected $fillable = ['categoryId', 'itemName', 'description','initialQuantity', 'quantity'];
 
     public function category()
     {

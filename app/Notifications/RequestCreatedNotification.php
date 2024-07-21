@@ -8,16 +8,16 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
 
-class RequestCreatedNotification extends Notification
+class RequestCreatedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
     private $request;
+
     public function __construct($request)
     {
         $this->request = $request;
     }
-
 
     public function via(object $notifiable): array
     {
@@ -25,26 +25,21 @@ class RequestCreatedNotification extends Notification
         return ['mail'];
     }
 
-    /**
-     * Get the mail representation of the notification.
-     */
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
+            ->subject('New Request Created')
             ->line('A new request has been created.')
             ->action('View Request', url('/requests/' . $this->request->requestId))
             ->line('Thank you for using our application!');
     }
 
-    /**
-     * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
-     */
     public function toArray(object $notifiable): array
     {
         return [
-            //
+            'request_id' => $this->request->requestId,
+            'request_date' => $this->request->date,
+            'request_status' => $this->request->status,
         ];
     }
 }

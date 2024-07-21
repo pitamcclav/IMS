@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Supplier;
-use http\Env\Response;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class SupplierController extends Controller
 {
@@ -21,18 +22,39 @@ class SupplierController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'supplierName' => 'required',
-            'contactInfo' => 'required',
-        ]);
+        try {
+            // Validate the incoming request data
+            $validatedData = $request->validate([
+                'supplierName' => 'required|string|max:255',
+                'contactInfo' => 'required|string|max:255',
+            ]);
 
-        $supplier=Supplier::create($request->all());
+            // Create a new supplier
+            $supplier = Supplier::create($validatedData);
 
-        if($request->ajax()){
-            return response()->json(['success'=>true,'supplier'=>$supplier]);
+            // Check if the request is AJAX and return JSON response
+            if ($request->ajax()) {
+                return response()->json(['success' => true, 'supplier' => $supplier]);
+            }
+
+            // Redirect with success message
+            return redirect()->route('supplier.index')->with('success', 'Supplier added successfully.');
+
+        } catch (ValidationException $e) {
+            // Capture and log validation errors
+            $errors = $e->validator->errors();
+            Log::error('Validation errors while creating supplier: ', $errors->toArray());
+
+            // Redirect back with validation errors
+            return redirect()->back()->withErrors($errors)->withInput();
+
+        } catch (\Exception $e) {
+            // Capture and log general errors
+            Log::error('Error creating supplier: ' . $e->getMessage());
+
+            // Redirect back with error message
+            return redirect()->back()->with('error', 'An error occurred while adding the supplier. Please try again.');
         }
-
-        return redirect()->route('supplier.index')->with('success', 'Supplier added successfully.');
     }
 
     public function edit(Supplier $supplier)
@@ -42,14 +64,34 @@ class SupplierController extends Controller
 
     public function update(Request $request, Supplier $supplier)
     {
-        $request->validate([
-            'supplierName' => 'required',
-            'contactInfo' => 'required',
-        ]);
+        try {
+            // Validate the incoming request data
+            $validatedData = $request->validate([
+                'supplierName' => 'required|string|max:255',
+                'contactInfo' => 'required|string|max:255',
+            ]);
 
-        $supplier->update($request->all());
+            // Update the supplier
+            $supplier->update($validatedData);
 
-        return redirect()->route('supplier.index')->with('success', 'Supplier updated successfully.');
+            // Redirect with success message
+            return redirect()->route('supplier.index')->with('success', 'Supplier updated successfully.');
+
+        } catch (ValidationException $e) {
+            // Capture and log validation errors
+            $errors = $e->validator->errors();
+            Log::error('Validation errors while updating supplier: ', $errors->toArray());
+
+            // Redirect back with validation errors
+            return redirect()->back()->withErrors($errors)->withInput();
+
+        } catch (\Exception $e) {
+            // Capture and log general errors
+            Log::error('Error updating supplier: ' . $e->getMessage());
+
+            // Redirect back with error message
+            return redirect()->back()->with('error', 'An error occurred while updating the supplier. Please try again.');
+        }
     }
 
     public function destroy($id)

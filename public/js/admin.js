@@ -31,12 +31,30 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             success: function (data) {
                 if (data.status === 'success') {
-                    window.location.reload();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Role Assigned!',
+                        text: 'The role has been successfully assigned.',
+                        confirmButtonText: 'Okay'
+                    }).then(() => {
+                        window.location.reload();
+                    });
                 } else {
-                    alert('An error occurred. Please try again.');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'An error occurred while assigning the role. Please try again.',
+                        confirmButtonText: 'Okay'
+                    });
                 }
             },
             error: function (xhr, status, error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'An unexpected error occurred. Please try again later.',
+                    confirmButtonText: 'Okay'
+                });
                 console.error('Error:', error);
             }
         });

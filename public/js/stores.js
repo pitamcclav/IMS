@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', function () {
         openModal('newStoreModal');
     });
 
-
     // CSRF token setup for AJAX requests
     $.ajaxSetup({
         headers: {
@@ -30,10 +29,6 @@ document.addEventListener('DOMContentLoaded', function () {
         let location = document.getElementById('location').value;
         let staffId = document.getElementById('staff').value;
 
-        console.log(storeName);
-        console.log(location);
-        console.log(staffId);
-
         // Send POST request to the server
         $.ajax({
             url: '/stores/add',
@@ -45,23 +40,30 @@ document.addEventListener('DOMContentLoaded', function () {
             },
             success: function (response) {
                 // Close the modal
-                console.log(response);
-                $('#newStoreModal').modal('hide');
-                // Reset the form
-                newStoreForm.reset();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Store Added!',
+                    text: 'The new store has been added successfully.',
+                    confirmButtonText: 'Okay'
+                }).then(() => {
+                    // Reset the form
+                    newStoreForm.reset();
 
-                // Refresh the page
-                window.location.reload();
+                    // Refresh the page
+                    window.location.reload();
 
-                // Reset the form
-                newStoreForm.reset();
-
-                // Append the new store row to the table body
-                let storeTableBody = document.getElementById('storeTable').getElementsByTagName('tbody')[0];
-                storeTableBody.insertAdjacentHTML('beforeend', response.storeRow);
+                    // Alternatively, you can append the new store row to the table if the page does not need a full reload
+                    let storeTableBody = document.getElementById('storeTable').getElementsByTagName('tbody')[0];
+                    storeTableBody.insertAdjacentHTML('beforeend', response.storeRow);
+                });
             },
             error: function (response) {
-                console.log(response);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'There was an issue adding the store. Please try again.',
+                    confirmButtonText: 'Okay'
+                });
             }
         });
     });

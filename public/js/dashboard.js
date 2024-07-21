@@ -5,6 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Data for Inventory Chart
     try {
         var inventoryData = JSON.parse(document.getElementById('inventoryData').textContent);
+
+        console.log(inventoryData);
     } catch (e) {
         console.error('Error parsing inventoryData JSON:', e);
     }
@@ -15,6 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
     var inventoryQuantities = inventoryData.map(function(item) {
         return item.quantity;
     });
+    console.log(inventoryLabels);
+    console.log(inventoryQuantities);
 
     // Inventory Chart
     var ctxInventory = document.getElementById('inventoryChart').getContext('2d');

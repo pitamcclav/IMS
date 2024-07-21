@@ -22,13 +22,15 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Add client-side validation for quantity
-    document.querySelector('input[name="quantities[]"]').addEventListener('input', function () {
-        let quantity = this.value.trim();
-        if (quantity !== '' && isNaN(quantity)) {
-            this.setCustomValidity('Quantity must be a number');
-        } else {
-            this.setCustomValidity('');
-        }
+    document.querySelectorAll('input[name="quantities[]"]').forEach(input => {
+        input.addEventListener('input', function () {
+            let quantity = this.value.trim();
+            if (quantity !== '' && isNaN(quantity)) {
+                this.setCustomValidity('Quantity must be a number');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
     });
 
     // CSRF token setup for AJAX requests
@@ -71,13 +73,28 @@ document.addEventListener('DOMContentLoaded', function () {
                     $('#newSupplierModal').modal('hide');
                     document.getElementById('newSupplierName').value = '';
                     document.getElementById('newSupplierContact').value = '';
-                    alert('Supplier added successfully');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Supplier Added!',
+                        text: 'The supplier was added successfully.',
+                        confirmButtonText: 'Okay'
+                    });
                 } else {
-                    alert('Failed to add supplier');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Failed to Add Supplier',
+                        text: 'There was a problem adding the supplier. Please try again.',
+                        confirmButtonText: 'Okay'
+                    });
                 }
             },
             error: function(response) {
-                alert('Error: ' + response.responseText);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An unexpected error occurred. Please try again later.',
+                    confirmButtonText: 'Okay'
+                });
             }
         });
     });
@@ -103,13 +120,28 @@ document.addEventListener('DOMContentLoaded', function () {
                     document.getElementById('newItemName').value = '';
                     document.getElementById('newItemDescription').value = '';
                     document.getElementById('newItemCategory').value = '';
-                    alert('Item added successfully');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Item Added!',
+                        text: 'The item was added successfully.',
+                        confirmButtonText: 'Okay'
+                    });
                 } else {
-                    alert('Failed to add item');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Failed to Add Item',
+                        text: 'There was a problem adding the item. Please try again.',
+                        confirmButtonText: 'Okay'
+                    });
                 }
             },
             error: function(response) {
-                alert('Error: ' + response.responseText);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An unexpected error occurred. Please try again later.',
+                    confirmButtonText: 'Okay'
+                });
             }
         });
     });
@@ -129,13 +161,28 @@ document.addEventListener('DOMContentLoaded', function () {
                     updateSelectOptions('colourIds[]', { value: response.colour.colourId, text: response.colour.colourName });
                     $('#newColorModal').modal('hide');
                     document.getElementById('newColorName').value = '';
-                    alert('Color added successfully');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Color Added!',
+                        text: 'The color was added successfully.',
+                        confirmButtonText: 'Okay'
+                    });
                 } else {
-                    alert('Failed to add color');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Failed to Add Color',
+                        text: 'There was a problem adding the color. Please try again.',
+                        confirmButtonText: 'Okay'
+                    });
                 }
             },
             error: function(response) {
-                alert('Error: ' + response.responseText);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An unexpected error occurred. Please try again later.',
+                    confirmButtonText: 'Okay'
+                });
             }
         });
     });
@@ -155,13 +202,28 @@ document.addEventListener('DOMContentLoaded', function () {
                     updateSelectOptions('sizeIds[]', { value: response.size.sizeId, text: response.size.sizeValue });
                     $('#newSizeModal').modal('hide');
                     document.getElementById('newSizeValue').value = '';
-                    alert('Size added successfully');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Size Added!',
+                        text: 'The size was added successfully.',
+                        confirmButtonText: 'Okay'
+                    });
                 } else {
-                    alert('Failed to add size');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Failed to Add Size',
+                        text: 'There was a problem adding the size. Please try again.',
+                        confirmButtonText: 'Okay'
+                    });
                 }
             },
             error: function(response) {
-                alert('Error: ' + response.responseText);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An unexpected error occurred. Please try again later.',
+                    confirmButtonText: 'Okay'
+                });
             }
         });
     });
@@ -173,31 +235,31 @@ document.addEventListener('DOMContentLoaded', function () {
         newRow.classList.add('variant-row');
 
         newRow.innerHTML = `
-            <td>
-                <select name="sizeIds[]" class="form-control" required>
-                    <option value="" disabled selected>Select Size</option>
-                    ${sizes.map(size => `<option value="${size.sizeId}">${size.sizeValue}</option>`).join('')}
-                    <option value="new">New Size</option>
-                </select>
-            </td>
-            <td>
-                <select name="colourIds[]" class="form-control" required>
-                    <option value="" disabled selected>Select Colour</option>
-                    ${colours.map(colour => `<option value="${colour.colourId}">${colour.colourName}</option>`).join('')}
-                    <option value="new">New Colour</option>
-                </select>
-            </td>
-            <td>
-                <div class="d-flex align-items-center">
-                    <button type="button" class="btn btn-outline-secondary minus-quantity">-</button>
-                    <input type="number" name="quantities[]" class="form-control mx-2 text-center" value="1" min="1">
-                    <button type="button" class="btn btn-outline-secondary plus-quantity">+</button>
-                </div>
-            </td>
-            <td>
-                <button type="button" class="btn btn-danger remove-row-btn">-</button>
-            </td>
-        `;
+        <td>
+            <select name="sizeIds[]" class="form-control" required>
+                <option value="" disabled selected>Select Size</option>
+                ${sizes.map(size => `<option value="${size.sizeId}">${size.sizeValue}</option>`).join('')}
+                <option value="new">New Size</option>
+            </select>
+        </td>
+        <td>
+            <select name="colourIds[]" class="form-control" required>
+                <option value="" disabled selected>Select Colour</option>
+                ${colours.map(colour => `<option value="${colour.colourId}">${colour.colourName}</option>`).join('')}
+                <option value="new">New Colour</option>
+            </select>
+        </td>
+        <td>
+            <div class="d-flex align-items-center">
+                <button type="button" class="btn btn-outline-secondary minus-quantity">-</button>
+                <input type="number" name="quantities[]" class="form-control mx-2 text-center" value="1" min="1">
+                <button type="button" class="btn btn-outline-secondary plus-quantity">+</button>
+            </div>
+        </td>
+        <td>
+            <button type="button" class="btn btn-danger remove-row-btn">-</button>
+        </td>
+    `;
 
         tbody.appendChild(newRow);
     });
@@ -208,7 +270,12 @@ document.addEventListener('DOMContentLoaded', function () {
             if (document.querySelectorAll('.variant-row').length > 1) {
                 e.target.closest('tr').remove();
             } else {
-                alert('You must have at least one variant.');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Minimum Requirement',
+                    text: 'You must have at least one variant.',
+                    confirmButtonText: 'Okay'
+                });
             }
         } else if (e.target.classList.contains('plus-quantity')) {
             let input = e.target.closest('.d-flex').querySelector('input');

@@ -83,8 +83,8 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <button type="button" class="btn btn-success add-row-btn">+</button>
-                                    <button type="button" class="btn btn-danger remove-row-btn">-</button>
+                                    <button type="button" class="btn btn-success btn-sm add-row-btn">+</button>
+                                    <button type="button" class="btn btn-danger btn-sm remove-row-btn">-</button>
                                 </td>
                             </tr>
                             </tbody>
@@ -92,8 +92,8 @@
                     </div>
                 </div>
             </div>
-            <button type="button" class="btn btn-secondary my-4" id="addItemBtn">Add Item</button>
-            <button type="submit" id="submitBtn" class="btn btn-primary">Submit</button>
+            <button type="button" class="btn btn-sm btn-secondary my-4" id="addItemBtn">Add Item</button>
+            <button type="submit" id="submitBtn" class="btn btn-sm btn-primary">Submit</button>
         </form>
 
         <!-- Hidden elements for options -->

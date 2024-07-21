@@ -114,52 +114,91 @@ class AdminController extends Controller
 
     public function addStore(Request $request)
     {
+        try {
+            // Validate the request data
+            $validatedData = $request->validate([
+                'storeName' => 'required|string|max:255',
+                'location' => 'required|string|max:255',
+            ]);
 
-        $request->validate([
-            'storeName' => 'required|string|max:255',
-            'location' => 'required|string|max:255',
-        ]);
-        #check if store name already exists
-        $store = Store::where('storeName', $request->storeName)->first();
-        if ($store) {
-            return response()->json(['error' => 'Store name already exists.'], 422);
+            // Check if the store name already exists
+            $store = Store::where('storeName', $request->storeName)->first();
+            if ($store) {
+                return response()->json(['error' => 'Store name already exists.'], 422);
+            }
+
+            // Create the store
+            $store = Store::create([
+                'storeName' => $validatedData['storeName'],
+                'managerId' => $request->staffId ?? null,
+                'location' => $validatedData['location'],
+            ]);
+
+            // Return a success response
+            return response()->json(['success' => true, 'store' => $store]);
+
+        } catch (ValidationException $e) {
+            // Handle validation errors
+            $errors = $e->validator->errors();
+            Log::error('Validation errors while adding store: ', $errors->toArray());
+            return response()->json(['error' => $errors->toArray()], 422);
+
+        } catch (\Exception $e) {
+            // Handle general exceptions
+            Log::error('Error adding store: ' . $e->getMessage());
+            return response()->json(['error' => 'An error occurred while adding the store. Please try again.'], 500);
         }
-
-        $store = Store::create([
-            'storeName' => $request->storeName,
-            'managerId' => $request->staffId ?? null,
-            'location' => $request->location,
-        ]);
-
-        /// Return a simple JSON response indicating success
-        return response()->json(['success' => true]);
     }
 
     public function editStore($id)
     {
-        $store = Store::find($id);
-        $staff = Staff::whereHas('roles', function ($query) {
-            $query->where('name', 'manager');
-        })->get();
+        try {
+            $store = Store::findOrFail($id);
+            $staff = Staff::whereHas('roles', function ($query) {
+                $query->where('name', 'manager');
+            })->get();
 
-        return view('admin.editStore', compact('store', 'staff'));
+            return view('admin.editStore', compact('store', 'staff'));
+
+        } catch (\Exception $e) {
+            Log::error('Error retrieving store for edit: ' . $e->getMessage());
+            return redirect()->route('stores')->with('error', 'An error occurred while retrieving the store for editing.');
+        }
     }
 
     public function updateStore(Request $request)
     {
-        $request->validate([
-            'storeName' => 'required|string|max:255',
-            'location' => 'required|string|max:255',
-        ]);
+        try {
+            // Validate the request data
+            $validatedData = $request->validate([
+                'id' => 'required|exists:stores,id',
+                'storeName' => 'required|string|max:255',
+                'location' => 'required|string|max:255',
+            ]);
 
-        $store = Store::find($request->id);
-        $store->storeName = $request->storeName;
-        $store->managerId = $request->staffId ?? null;
-        $store->location = $request->location;
-        $store->save();
+            // Find and update the store
+            $store = Store::findOrFail($validatedData['id']);
+            $store->update([
+                'storeName' => $validatedData['storeName'],
+                'managerId' => $request->staffId ?? null,
+                'location' => $validatedData['location'],
+            ]);
 
-        return redirect()->route('stores')->with('success', 'Store updated successfully.');
+            return redirect()->route('stores')->with('success', 'Store updated successfully.');
+
+        } catch (ValidationException $e) {
+            // Handle validation errors
+            $errors = $e->validator->errors();
+            Log::error('Validation errors while updating store: ', $errors->toArray());
+            return redirect()->back()->withErrors($errors)->withInput();
+
+        } catch (\Exception $e) {
+            // Handle general exceptions
+            Log::error('Error updating store: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'An error occurred while updating the store. Please try again.');
+        }
     }
+
 
     public function deleteStore($id)
     {
