@@ -28,10 +28,18 @@ class RequestCreatedNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('New Request Created')
-            ->line('A new request has been created.')
-            ->action('View Request', url('/requests/' . $this->request->requestId))
-            ->line('Thank you for using our application!');
+            ->view('vendor.notifications.request-created', [
+                'greeting' => 'Hello!',
+                'request_id' => $this->request->requestId,
+                'request_date' => $this->request->date,
+                'request_status' => $this->request->status,
+                'introLines' => ['Your request has been created successfully.'],
+                'actionText' => 'View Request',
+                'actionUrl' => url('/requests/' . $this->request->id),
+                'outroLines' => ['Thank you for using our application!'],
+                'salutation' => 'Best regards,'
+            ])
+            ->subject('New Request Created');
     }
 
     public function toArray(object $notifiable): array

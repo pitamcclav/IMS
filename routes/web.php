@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\EmailTemplateController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\UsersController;
@@ -35,6 +36,7 @@ Route::middleware(['auth:staff'])->group(function () {
     //Admin specific routes
     Route::middleware(['role:admin'])->group(function () {
         Route::resource('users', AdminController::class);
+        Route::resource('emailTemplates', EmailTemplateController::class);
         Route::get('/admin/dashboard', [UsersController::class, 'admin'])->name('admin.dashboard');
         Route::get('/stores', [AdminController::class, 'stores'])->name('stores');
         Route::post('/stores/add', [AdminController::class, 'addStore'])->name('stores.add');
@@ -72,23 +74,6 @@ Route::middleware(['auth:staff'])->group(function () {
         //Store colours and sizes
         Route::post('/api/colour', [InventoryController::class, 'storeColor']);
         Route::post('/api/size', [InventoryController::class, 'storeSize']);
-
-        Route::get('/storage/{filename}', function ($filename) {
-            $path = storage_path('app/public/' . $filename);
-
-            if (!File::exists($path)) {
-                abort(404);
-            }
-
-            $file = File::get($path);
-            $type = File::mimeType($path);
-
-            $response = Response::make($file, 200);
-            $response->header("Content-Type", $type);
-
-            return $response;
-        });
-
 
 
     });

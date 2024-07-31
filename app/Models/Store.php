@@ -23,4 +23,9 @@ class Store extends Model
     {
         return $this->hasMany(Inventory::class, 'storeId');
     }
+
+    public function template()
+    {
+        return $this->hasMany(EmailTemplate::class, 'storeId');
+    }
 }

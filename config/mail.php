@@ -113,4 +113,8 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    'path' => [
+        resource_path('views/vendor/notifications'),
+    ]
+
 ];

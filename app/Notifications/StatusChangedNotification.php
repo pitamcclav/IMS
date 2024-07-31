@@ -12,7 +12,6 @@ class StatusChangedNotification extends Notification implements ShouldQueue
     use Queueable;
 
     private $request;
-
     public function __construct($request)
     {
         $this->request = $request;
@@ -34,10 +33,16 @@ class StatusChangedNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Request Status Changed')
-            ->line('The status of your request has changed to ' . $this->request->status . '.')
-            ->action('View Request', url('/requests/' . $this->request->id))
-            ->line('Thank you for using our application!');
+            ->view('vendor.notifications.status-changed', [
+                'greeting' => 'Hello!',
+                'level' => 'success', // or 'error' or any other level based on your logic
+                'introLines' => ['The status of your request has changed to ' . $this->request->status . '.'],
+                'actionText' => 'View Request',
+                'actionUrl' => url('/requests/' . $this->request->id),
+                'outroLines' => ['Thank you for using our application!'],
+                'salutation' => 'Best regards,'
+            ])
+            ->subject('Request Status Updated');
     }
 
     /**
@@ -48,8 +53,7 @@ class StatusChangedNotification extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'request_id' => $this->request->id,
-            'status' => $this->request->status,
+            //
         ];
     }
 }

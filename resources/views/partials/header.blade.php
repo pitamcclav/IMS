@@ -109,6 +109,9 @@
                     <li class="sidebar-item">
                         <a href="{{ route('stores') }}" class="sidebar-link">Stores<i class="lni lni-chevron-right"></i></a>
                     </li>
+                    <li class="sidebar-item">
+                        <a href="{{ route('emailTemplates.index') }}" class="sidebar-link">Email Templates<i class="lni lni-chevron-right"></i></a>
+                    </li>
                 </ul>
             </li>
         @endcan
