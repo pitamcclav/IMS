@@ -4,13 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Colour;
 use App\Models\Staff;
-
 use App\Models\Store;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Models\Role;
 
@@ -19,7 +17,7 @@ class AdminController extends Controller
     public function index()
     {
         $roles = Role::all();
-        $staff = Staff::with('roles')->get();
+        $staff = Staff::with('roles')->where('staffId', '!=', 1)->get();
         return view('admin.user', compact('staff', 'roles'));
     }
 
@@ -53,47 +51,80 @@ class AdminController extends Controller
             $errors = $e->validator->errors();
 
             // Log the validation errors for debugging purposes
-            \Log::error('Validation errors: ', $errors->toArray());
+            Log::error('Validation errors: ', $errors->toArray());
 
             // Redirect back with the validation errors
             return redirect()->back()->withErrors($errors)->withInput();
         } catch (\Exception $e) {
             // Log the error message and redirect back with an error message
-            \Log::error('Error creating user: ' . $e->getMessage());
+            Log::error('Error creating user: ' . $e->getMessage());
             return redirect()->back()->with('error', 'An error occurred while creating the user. Please try again.');
         }
     }
 
-
     public function edit($id)
     {
-        $user = Staff::find($id);
-        return view('admin.edit', compact('user'));
+        try {
+            $user = Staff::with('roles')->findOrFail($id);
+            $roles = Role::all();
+            
+            return view('admin.edit', compact('user', 'roles'));
+        } catch (\Exception $e) {
+            Log::error('Error retrieving user for edit: ' . $e->getMessage());
+            return redirect()->route('users.index')
+                ->with('error', 'An error occurred while retrieving the user information.');
+        }
     }
 
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:staff,email,'.$id,
-            'role' => 'required|string',
-        ]);
+        try {
+            $user = Staff::findOrFail($id);
 
-        $user = Staff::find($id);
-        $user->name = $request->name;
-        $user->email = $request->email;
-        $user->role = $request->role;
-
-        if ($request->filled('password')) {
-            $request->validate([
-                'password' => 'sometimes|string|min:8|confirmed',
+            // Validate the request data
+            $validatedData = $request->validate([
+                'staffName' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:staff,email,'.$id.',staffId',
+                'role' => 'required|string|exists:roles,name',
+                'password' => 'nullable|string|min:8|confirmed',
             ]);
-            $user->password = Hash::make($request->password);
+
+            // Update basic information
+            $user->staffName = $validatedData['staffName'];
+            $user->email = $validatedData['email'];
+
+            // Update password if provided
+            if (!empty($validatedData['password'])) {
+                $user->password = Hash::make($validatedData['password']);
+            }
+
+            $user->save();
+
+            // If role is changing and user was a manager, remove store assignment
+            if (!$user->hasRole($validatedData['role']) && $user->hasRole('manager')) {
+                $store = Store::where('managerId', $user->staffId)->first();
+                if ($store) {
+                    $store->managerId = null;
+                    $store->save();
+                }
+            }
+            
+            // Sync the user's roles
+            $user->syncRoles([$validatedData['role']]);
+
+            return redirect()->route('users.index')
+                ->with('success', 'User updated successfully.');
+
+        } catch (ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->validator)
+                ->withInput();
+        } catch (\Exception $e) {
+            Log::error('Error updating user: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'An error occurred while updating the user.')
+                ->withInput();
         }
-
-        $user->save();
-
-        return redirect()->route('users.index')->with('success', 'User updated successfully.');
     }
 
     public function destroy($id)
@@ -108,8 +139,11 @@ class AdminController extends Controller
     public function stores()
     {
         $stores = Store::with('manager')->get();
-        $staff = Staff::all();
-        return view('admin.stores', compact('stores', 'staff'));
+        $staffs = Staff::whereHas('roles', function ($query) {
+            $query->where('name', 'manager');
+        })->doesntHave('managedStore')->get();
+        
+        return view('admin.stores', compact('stores', 'staffs'));
     }
 
     public function addStore(Request $request)
@@ -154,8 +188,13 @@ class AdminController extends Controller
     {
         try {
             $store = Store::findOrFail($id);
+            
+            // Get managers who haven't been assigned to any store or are the current manager of this store
             $staff = Staff::whereHas('roles', function ($query) {
                 $query->where('name', 'manager');
+            })->where(function ($query) use ($store) {
+                $query->doesntHave('managedStore')
+                    ->orWhere('staffId', $store->managerId);
             })->get();
 
             return view('admin.editStore', compact('store', 'staff'));
@@ -168,16 +207,18 @@ class AdminController extends Controller
 
     public function updateStore(Request $request)
     {
+        Log::info($request);
+        
         try {
             // Validate the request data
             $validatedData = $request->validate([
-                'id' => 'required|exists:stores,id',
+                'storeId' => 'required|exists:store,storeId',
                 'storeName' => 'required|string|max:255',
                 'location' => 'required|string|max:255',
             ]);
 
             // Find and update the store
-            $store = Store::findOrFail($validatedData['id']);
+            $store = Store::findOrFail($validatedData['storeId']);
             $store->update([
                 'storeName' => $validatedData['storeName'],
                 'managerId' => $request->staffId ?? null,
@@ -199,7 +240,6 @@ class AdminController extends Controller
         }
     }
 
-
     public function deleteStore($id)
     {
         $store = Store::findOrFail($id);
@@ -211,16 +251,31 @@ class AdminController extends Controller
     public function assignRoles(Request $request)
     {
         Log::info($request);
-        $staff = Staff::findOrFail($request->staff_id);
-        $roles = $request->roles;
-        Log::info($roles);
-        Log::info($staff);
 
-        DB::transaction(function () use ($staff, $roles) {
-            $staff->assignRole($roles);
-        });
+        try {
+            $request->validate([
+                'staffId' => 'required|exists:staff,staffId',
+                'role' => 'required|string',
+            ]);
 
-        return response()->json(['status' => 'success']);
+            $staff = Staff::findOrFail($request->staffId);
+            $role = $request->role;
+
+            DB::transaction(function () use ($staff, $role) {
+                $staff->syncRoles($role);
+            });
+
+            return response()->json(['status' => 'success']);
+
+        } catch (ValidationException $e) {
+            $errors = $e->validator->errors();
+            Log::error('Validation errors while assigning roles: ', $errors->toArray());
+            return response()->json(['error' => $errors->toArray()], 422);
+
+        } catch (\Exception $e) {
+            Log::error('Error assigning roles: ' . $e->getMessage());
+            return response()->json(['error' => 'An error occurred while assigning roles. Please try again.'], 500);
+        }
     }
 
     public function revokeRoles(Request $request, $staffId)
@@ -233,7 +288,4 @@ class AdminController extends Controller
 
         return redirect()->back()->with('status', 'Roles revoked successfully!');
     }
-
-
-
 }

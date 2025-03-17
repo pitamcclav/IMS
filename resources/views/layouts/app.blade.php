@@ -1,106 +1,174 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
-        <title>@yield('title', 'Inventory Management System')</title>
+@extends('layouts.base')
 
-        <!-- Local Style Sheets -->
-        <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-        <link rel="stylesheet" href="{{ asset('css/ims.css') }}">
+@section('body')
+    <div class="min-h-screen bg-gray-100">
+        @include('partials.sidebar')
+        
+        <!-- Main Content Area -->
+        <div 
+            x-data
+            class="no-transition transition-all duration-300 ease-in-out"
+            :class="{ 'lg:pl-64': $store.sidebar.isOpen, 'pl-7': !$store.sidebar.isOpen }"
+            x-init="setTimeout(() => $el.classList.remove('no-transition'), 0)"
+        >
+            
+            <!-- Page Content -->
+            <main class="pt-8">
+                <!-- Laravel Session Notifications -->
+                <div class="fixed inset-x-0 top-20 flex justify-center items-start z-50 px-4">
+                    <div class="w-full max-w-md space-y-4">
+                        @if (session('success'))
+                            <div class="w-full bg-green-50 shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 overflow-hidden">
+                                <div class="p-4">
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0">
+                                            <i class="lni lni-checkmark-circle text-green-400"></i>
+                                        </div>
+                                        <div class="ml-3 w-0 flex-1 pt-0.5">
+                                            <p class="text-sm font-medium text-green-800">
+                                                {{ session('success') }}
+                                            </p>
+                                        </div>
+                                        <div class="ml-4 flex-shrink-0 flex">
+                                            <button onclick="this.closest('div.w-full').remove()"
+                                                    class="bg-transparent rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                                <span class="sr-only">Close</span>
+                                                <i class="lni lni-close h-5 w-5"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
 
-        <!-- Meta Information -->
-        <meta content="" name="description">
-        <meta content="" name="keywords">
+                        @if (session('error'))
+                            <div class="w-full bg-red-50 shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 overflow-hidden">
+                                <div class="p-4">
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0">
+                                            <i class="lni lni-close text-red-400"></i>
+                                        </div>
+                                        <div class="ml-3 w-0 flex-1 pt-0.5">
+                                            <p class="text-sm font-medium text-red-800">
+                                                {{ session('error') }}
+                                            </p>
+                                        </div>
+                                        <div class="ml-4 flex-shrink-0 flex">
+                                            <button onclick="this.closest('div.w-full').remove()"
+                                                    class="bg-transparent rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                                <span class="sr-only">Close</span>
+                                                <i class="lni lni-close h-5 w-5"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
 
-        <!-- Bootstrap CSS from CDN -->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.4/jquery-confirm.min.css">
-        <link href="https://cdn.jsdelivr.net/gh/kartik-v/bootstrap-fileinput@5.5.0/css/fileinput.min.css" media="all" rel="stylesheet" type="text/css" />
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.min.css" crossorigin="anonymous">
-
-
-
-        <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
-        <!-- Google Fonts -->
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=Roboto:ital,wght@0,300;0,400;0,500;0,600;0,700&family=Work+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&display=swap" rel="stylesheet">
-    </head>
-    <body>
-        <div class="wrapper">
-            <!-- Left Navbar -->
-            @include('partials.header')
-
-            <!-- Main Content -->
-            <div class="container-fluid main p-3">
-                @if($errors->any())
-                    <div class="alert alert-danger">
-                        <ul>
-                            @foreach($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
+                        @if ($errors->any())
+                            <div class="w-full bg-red-50 shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 overflow-hidden">
+                                <div class="p-4">
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0">
+                                            <i class="lni lni-warning text-red-400"></i>
+                                        </div>
+                                        <div class="ml-3 w-0 flex-1 pt-0.5">
+                                            <ul class="list-disc list-inside text-sm font-medium text-red-800">
+                                                @foreach ($errors->all() as $error)
+                                                    <li>{{ $error }}</li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                        <div class="ml-4 flex-shrink-0 flex">
+                                            <button onclick="this.closest('div.w-full').remove()"
+                                                    class="bg-transparent rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                                <span class="sr-only">Close</span>
+                                                <i class="lni lni-close h-5 w-5"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
                     </div>
-                @endif
-                @if(Session::has('success'))
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        {{ Session::get('success') }}
-                        <button type="button" class="btn-close" data-dismiss="alert" aria-label="Close">
-                        </button>
+                </div>
+
+                <!-- Alpine.js Dynamic Notifications -->
+                <div class="fixed inset-x-0 top-20 flex justify-center items-start z-50 px-4 mt-20" 
+                     x-data 
+                     @notification.window="Alpine.store('notifications').add($event.detail)">
+                    <div class="w-full max-w-md space-y-4">
+                        <template x-for="notification in $store.notifications.items" :key="notification.id">
+                            <div x-show="true"
+                                    x-transition:enter="transform ease-out duration-300 transition"
+                                    x-transition:enter-start="translate-y-2 opacity-0"
+                                    x-transition:enter-end="translate-y-0 opacity-100"
+                                    x-transition:leave="transition ease-in duration-100"
+                                    x-transition:leave-start="opacity-100"
+                                    x-transition:leave-end="opacity-0"
+                                    class="w-full bg-white shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 overflow-hidden"
+                                    :class="{
+                                        'bg-green-50': notification.type === 'success',
+                                        'bg-red-50': notification.type === 'error',
+                                        'bg-yellow-50': notification.type === 'warning',
+                                        'bg-blue-50': notification.type === 'info'
+                                    }">
+                                    <div class="p-4">
+                                        <div class="flex items-start">
+                                            <div class="flex-shrink-0">
+                                                <template x-if="notification.type === 'success'">
+                                                    <i class="lni lni-checkmark-circle text-green-400"></i>
+                                                </template>
+                                                <template x-if="notification.type === 'error'">
+                                                    <i class="lni lni-close text-red-400"></i>
+                                                </template>
+                                                <template x-if="notification.type === 'warning'">
+                                                    <i class="lni lni-warning text-yellow-400"></i>
+                                                </template>
+                                                <template x-if="notification.type === 'info'">
+                                                    <i class="lni lni-information text-blue-400"></i>
+                                                </template>
+                                            </div>
+                                            <div class="ml-3 w-0 flex-1 pt-0.5">
+                                                <p x-text="notification.message"
+                                                :class="{
+                                                    'text-green-800': notification.type === 'success',
+                                                    'text-red-800': notification.type === 'error',
+                                                    'text-yellow-800': notification.type === 'warning',
+                                                    'text-blue-800': notification.type === 'info'
+                                                }"
+                                                class="text-sm font-medium"></p>
+                                            </div>
+                                            <div class="ml-4 flex-shrink-0 flex">
+                                                <button @click="$store.notifications.remove(notification.id)"
+                                                        class="bg-transparent rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                                    <span class="sr-only">Close</span>
+                                                    <i class="lni lni-close h-5 w-5"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
                     </div>
-                @endif
-
-                @if(Session::has('error'))
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        {{ Session::get('error') }}
-                        <button type="button" class="btn-close" data-dismiss="alert" aria-label="Close">
-                        </button>
-                    </div>
-                @endif
-
-
-                @yield('content')
-                @include('partials.modals.delete')
-            </div>
+                
+                <div class="px-4 sm:px-6 lg:px-8">
+                    @yield('content')
+                </div>
+            </main>
         </div>
+    </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
-
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-        <!-- Bootstrap JS and Dependencies from CDN -->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.4/jquery-confirm.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/gh/kartik-v/bootstrap-fileinput@5.5.0/js/plugins/buffer.min.js" type="text/javascript"></script>
-        <script src="https://cdn.jsdelivr.net/gh/kartik-v/bootstrap-fileinput@5.5.0/js/plugins/filetype.min.js" type="text/javascript"></script>
-        <script src="https://cdn.jsdelivr.net/gh/kartik-v/bootstrap-fileinput@5.5.0/js/plugins/piexif.min.js" type="text/javascript"></script>
-
-        <!-- sortable.min.js is only needed if you wish to sort / rearrange files in initial preview.
-            This must be loaded before fileinput.min.js -->
-        <script src="https://cdn.jsdelivr.net/gh/kartik-v/bootstrap-fileinput@5.5.0/js/plugins/sortable.min.js" type="text/javascript"></script>
-
-        <!-- bootstrap.bundle.min.js below is needed if you wish to zoom and preview file content in a detail modal
-            dialog. bootstrap 5.x or 4.x is supported. You can also use the bootstrap js 3.3.x versions. -->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-
-        <!-- the main fileinput plugin script JS file -->
-        <script src="https://cdn.jsdelivr.net/gh/kartik-v/bootstrap-fileinput@5.5.0/js/fileinput.min.js"></script>
-
-
-        <!-- optionally if you need translation for your language then include the locale file as mentioned below (replace LANG.js with your language locale) -->
-        <script src="https://cdn.jsdelivr.net/gh/kartik-v/bootstrap-fileinput@5.5.0/js/locales/LANG.js"></script>
-        <!-- Custom JS -->
-        @yield('scripts')
-        <script src="{{ asset('js/app.js') }}"></script>
-        <script>
-            $(document).ready(function() {
-                // Adjust the timeout duration (in milliseconds) as needed
-                setTimeout(function() {
-                    $(".alert").alert('close');
-                }, 5000); // 5000 milliseconds = 5 seconds
+    <script>
+        // Auto-hide Laravel notifications after 5 seconds
+        document.addEventListener('DOMContentLoaded', () => {
+            const notifications = document.querySelectorAll('.bg-green-50, .bg-red-50');
+            notifications.forEach(notification => {
+                setTimeout(() => {
+                    notification.remove();
+                }, 5000);
             });
-        </script>
-    </body>
-</html>
+        });
+    </script>
+@endsection

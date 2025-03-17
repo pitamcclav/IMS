@@ -15,11 +15,8 @@ return new class extends Migration
             $table->id('staffId');
             $table->string('staffName');
             $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->unsignedBigInteger('supervisorId')->nullable();
-            $table->foreign('supervisorId')->references('staffId')
-                ->on('staff')->onDelete('no action');
+            $table->rememberToken();
             $table->timestamps();
         });
 

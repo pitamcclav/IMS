@@ -32,28 +32,43 @@ class SupplierController extends Controller
             // Create a new supplier
             $supplier = Supplier::create($validatedData);
 
-            // Check if the request is AJAX and return JSON response
-            if ($request->ajax()) {
-                return response()->json(['success' => true, 'supplier' => $supplier]);
+            // Always return JSON for API routes
+            if (str_starts_with($request->path(), 'api/')) {
+                return response()->json([
+                    'success' => true,
+                    'supplier' => $supplier
+                ]);
             }
 
-            // Redirect with success message
-            return redirect()->route('supplier.index')->with('success', 'Supplier added successfully.');
+            // Return HTML response for web routes
+            return redirect()->route('supplier.index')
+                ->with('success', 'Supplier added successfully.');
 
         } catch (ValidationException $e) {
-            // Capture and log validation errors
-            $errors = $e->validator->errors();
-            Log::error('Validation errors while creating supplier: ', $errors->toArray());
-
-            // Redirect back with validation errors
-            return redirect()->back()->withErrors($errors)->withInput();
+            if (str_starts_with($request->path(), 'api/')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $e->validator->errors()
+                ], 422);
+            }
+            
+            return redirect()->back()
+                ->withErrors($e->validator)
+                ->withInput();
 
         } catch (\Exception $e) {
-            // Capture and log general errors
             Log::error('Error creating supplier: ' . $e->getMessage());
+            
+            if (str_starts_with($request->path(), 'api/')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'An error occurred while adding the supplier.'
+                ], 500);
+            }
 
-            // Redirect back with error message
-            return redirect()->back()->with('error', 'An error occurred while adding the supplier. Please try again.');
+            return redirect()->back()
+                ->with('error', 'An error occurred while adding the supplier. Please try again.');
         }
     }
 

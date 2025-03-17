@@ -12,9 +12,9 @@ class StaffSeeder extends Seeder
     {
         // Insert the default admin user
         $admin = Staff::create([
-            'staffName' => 'Goodman',
+            'staffName' => 'Admin',
             'email' => 'admin@example.com',
-            'password' => Hash::make(12345678), // Replace '12345678' with the actual password
+            'password' => Hash::make('admin123'), // Replace '12345678' with the actual password
             'created_at' => now(),
             'updated_at' => now(),
             // other fields
@@ -22,7 +22,7 @@ class StaffSeeder extends Seeder
 
         // Assign the super-admin role to the admin user
         $adminRole = Role::findByName('admin', 'staff');
-        $admin->assignRole($adminRole);
+        $admin->syncRoles($adminRole);
     }
 }
 

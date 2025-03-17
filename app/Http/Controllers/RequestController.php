@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Jobs\SendRequestNotification;
 use App\Models\Colour;
-use App\Models\EmailTemplate;
 use App\Models\Inventory;
 use App\Models\Request as InventoryRequest;
 use App\Models\Item;
@@ -16,31 +15,34 @@ use App\Notifications\LowStockNotification;
 use App\Notifications\StatusChangedNotification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
-
 
 class RequestController extends Controller
 {
     public function index()
     {
-        if (auth()->user()->hasRole('staff')) {
-            $requests = InventoryRequest::where('staffId', auth()->user()->staffId)
+        $user = Auth::guard('staff')->user(); // Retrieve the authenticated staff
+
+        if ($user && $user->hasRole('staff')) {
+            $requests = InventoryRequest::where('staffId', $user->staffId)
                 ->orderBy('created_at', 'desc')
                 ->paginate(10);
-        } elseif (auth()->user()->hasRole('manager')) {
-            $manager = Staff::where('staffId', auth()->user()->staffId)->first();
+        } elseif ($user && $user->hasRole('manager')) {
+            $manager = Staff::where('staffId', $user->staffId)->first();
             $stores = Store::where('managerId', $manager->staffId)->get();
             $requests = InventoryRequest::whereIn('storeId', $stores->pluck('storeId'))
                 ->orderBy('created_at', 'desc')
                 ->paginate(10);
-
-        }else{
-            $requests = InventoryRequest::orderBy('created_at', 'desc')
-                ->paginate(10);
+        } else {
+            $requests = InventoryRequest::orderBy('created_at', 'desc')->paginate(10);
         }
+
         return view('manager.request.index', compact('requests'));
     }
+
 
 
     public function create()
@@ -55,88 +57,136 @@ class RequestController extends Controller
 
     public function fetchColours($itemId)
     {
-        $inventory = Inventory::where('itemId', $itemId)->get();
-        $colors = $inventory->pluck('colour')->unique();
-        return response()->json($colors);
+        try {
+            $colours = Inventory::where('itemId', $itemId)
+                ->join('colour', 'inventory.colourId', '=', 'colour.colourId')
+                ->select('colour.*')
+                ->distinct()
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'colours' => $colours->map(function($colour) {
+                    return [
+                        'colourId' => strval($colour->colourId),
+                        'colourName' => $colour->colourName
+                    ];
+                })
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching colours: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch colours'
+            ], 500);
+        }
     }
 
     public function fetchSizes($itemId, $colourId)
     {
-        $inventory = Inventory::where('itemId', $itemId)
-            ->where('colourId', $colourId)
-            ->get();
-        $sizes = $inventory->pluck('size')->unique();
-        return response()->json($sizes);
+        try {
+            $sizes = Inventory::where('itemId', $itemId)
+                ->where('colourId', $colourId)
+                ->join('size', 'inventory.sizeId', '=', 'size.sizeId')
+                ->select('size.*')
+                ->distinct()
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'sizes' => $sizes->map(function($size) {
+                    return [
+                        'sizeId' => strval($size->sizeId),
+                        'sizeValue' => $size->sizeValue
+                    ];
+                })
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching sizes: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch sizes'
+            ], 500);
+        }
     }
 
     public function fetchItems($storeId)
     {
-        $items = Item::whereHas('category', function ($query) use ($storeId) {
-            $query->where('storeId', $storeId);
-        })->get();
-        Log::info('Items', $items->toArray());
-        return response()->json($items);
+        try {
+            $items = Item::whereHas('category', function ($query) use ($storeId) {
+                $query->where('storeId', $storeId);
+            })->get();
+
+            return response()->json($items);
+        } catch (\Exception $e) {
+            Log::error('Error fetching items: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to fetch items'], 500);
+        }
     }
 
     public function store(Request $request)
     {
-        if (auth()->user()->hasRole('staff')) {
-            $request['staffId'] = auth()->user()->staffId;
-        } elseif ((auth()->user()->hasRole('manager') || auth()->user()->hasRole('admin')) && $request->staffId == null) {
-            $request['staffId'] = auth()->user()->staffId;
-        }
+        try {
+            Log::info('Request data', $request->all());
 
-
-        // Log the request data for debugging
-        Log::info('Request data', $request->all());
-
-        // Validate the incoming request data
-        $request->validate([
-            'data' => 'required|array',
-            'data.*.itemId' => 'required|exists:item,itemId',
-            'data.*.quantity' => 'required|integer|min:1',
-            'data.*.colourId' => 'required|exists:colour,colourId',
-            'data.*.sizeId' => 'required|exists:size,sizeId',
-            'staffId' => 'required|exists:staff,staffId',
-            'storeId' => 'required|exists:store,storeId',
-        ]);
-
-
-        // Use a database transaction to ensure data integrity
-        \DB::transaction(function () use ($request) {
-            // Create the inventory request
-            $inventoryRequest = InventoryRequest::create([
-                'date' => Carbon::now(),
-                'status' => 'pending',
-                'staffId' => $request->staffId,
-                'storeId' => $request->storeId,
+            // Validate the incoming request data
+            $validatedData = $request->validate([
+                'data' => 'required|array',
+                'data.*.itemId' => 'required|exists:item,itemId',
+                'data.*.quantity' => 'required|integer|min:1',
+                'data.*.colourId' => 'required|exists:colour,colourId',
+                'data.*.sizeId' => 'required|exists:size,sizeId',
+                'staffId' => 'required|exists:staff,staffId',
+                'storeId' => 'required|exists:store,storeId',
             ]);
 
-            // Create each request detail
-            foreach ($request->data as $detail) {
-                Log::info('Request detail', ['detail' => $detail]);
-                RequestDetail::create([
-                    'requestId' => $inventoryRequest->requestId,
-                    'itemId' => $detail['itemId'],
-                    'quantity' => $detail['quantity'],
-                    'colourId' => $detail['colourId'],
-                    'sizeId' => $detail['sizeId'],
+            // Use a database transaction to ensure data integrity
+            $inventoryRequest = DB::transaction(function () use ($request) {
+                // Create the inventory request
+                $inventoryRequest = InventoryRequest::create([
+                    'date' => Carbon::now(),
+                    'status' => 'pending',
+                    'staffId' => $request->staffId,
+                    'storeId' => $request->storeId,
                 ]);
-            }
-//            $template = EmailTemplate::where('type', 'request_created')
-//                ->where('storeId', $request->storeId)->first();
-//
-//            Log::info('Template name', ['name' => $template]);
-//
-//            $templateName = $template->name.'_'.$template->type.'_'.$template->storeId;
 
-            // Dispatch the notification job
-            SendRequestNotification::dispatch($inventoryRequest, $request->staffId, $request->storeId);
-        });
+                // Create each request detail
+                foreach ($request->data as $detail) {
+                    Log::info('Request detail', ['detail' => $detail]);
+                    RequestDetail::create([
+                        'requestId' => $inventoryRequest->requestId,
+                        'itemId' => $detail['itemId'],
+                        'quantity' => $detail['quantity'],
+                        'colourId' => $detail['colourId'],
+                        'sizeId' => $detail['sizeId'],
+                    ]);
+                }
 
+                // Dispatch the notification job
+                SendRequestNotification::dispatch($inventoryRequest, $request->staffId, $request->storeId);
+                
+                return $inventoryRequest;
+            });
 
+            return response()->json([
+                'success' => true, 
+                'redirect_url' => route('requests.index')
+            ]);
 
-        return response()->json(['success' => true, 'redirect_url' => route('requests.index')]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Validation error in request creation: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Error in request creation: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while processing your request.'
+            ], 500);
+        }
     }
 
 
@@ -220,40 +270,83 @@ class RequestController extends Controller
 
     public function edit(InventoryRequest $request)
     {
+        // Eager load the relationships we need
+       $request->load(['requestDetails.item', 'requestDetails.colour', 'requestDetails.size']);
 
+
+        
         $items = Item::all();
         $staffs = Staff::all();
         $colours = Colour::all();
         $sizes = Size::all();
-        return view('manager.request.edit', compact('request', 'items', 'staffs', 'colours', 'sizes'));
+        $stores = Store::all();
+
+        
+        return view('manager.request.edit', compact('request', 'items', 'staffs', 'colours', 'sizes', 'stores'));
     }
 
     public function update(Request $request, $inventoryRequest)
     {
-        $request->validate([
-            'itemIds' => 'required|array',
-            'quantities' => 'required|array',
-            'colourIds' => 'required|array',
-            'sizeIds' => 'required|array',
-        ]);
-
-        // Retrieve the InventoryRequest instance
-        $inventoryRequest = InventoryRequest::findOrFail($inventoryRequest);
-
-        // Update the request details
-        RequestDetail::where('requestId', $inventoryRequest->requestId)->delete();
-        foreach ($request->itemIds as $index => $itemId) {
-            RequestDetail::create([
-                'requestId' => $inventoryRequest->requestId,
-                'itemId' => $itemId,
-                'quantity' => $request->quantities[$index],
-                'colourId' => $request->colourIds[$index],
-                'sizeId' => $request->sizeIds[$index],
+        try {
+            // Validate the incoming request data
+            $validatedData = $request->validate([
+                'details' => 'required|array',
+                'details.*.itemId' => 'required|exists:item,itemId',
+                'details.*.variants' => 'required|array',
+                'details.*.variants.*.colourId' => 'required|exists:colour,colourId',
+                'details.*.variants.*.sizeId' => 'required|exists:size,sizeId',
+                'details.*.variants.*.quantity' => 'required|integer|min:1',
+                'staffId' => 'required|exists:staff,staffId',
+                'storeId' => 'required|exists:store,storeId',
             ]);
-        }
 
-        Session::flash('success', 'Request updated successfully.');
-        return redirect()->route('requests.index');
+            // Retrieve the InventoryRequest instance
+            $inventoryRequest = InventoryRequest::findOrFail($inventoryRequest);
+            
+            // Use a transaction to ensure data integrity
+            DB::transaction(function () use ($inventoryRequest, $request) {
+                // Update the request's store and staff
+                $inventoryRequest->update([
+                    'storeId' => $request->storeId,
+                    'staffId' => $request->staffId
+                ]);
+
+                // Delete existing details
+                RequestDetail::where('requestId', $inventoryRequest->requestId)->delete();
+
+                // Create new request details
+                foreach ($request->details as $detail) {
+                    foreach ($detail['variants'] as $variant) {
+                        RequestDetail::create([
+                            'requestId' => $inventoryRequest->requestId,
+                            'itemId' => $detail['itemId'],
+                            'colourId' => $variant['colourId'],
+                            'sizeId' => $variant['sizeId'],
+                            'quantity' => $variant['quantity']
+                        ]);
+                    }
+                }
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Request updated successfully',
+                'redirect_url' => route('requests.index')
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Error updating request: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while updating the request'
+            ], 500);
+        }
     }
 
     public function destroy($id)

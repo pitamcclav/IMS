@@ -15,7 +15,6 @@ class RolesSeeder extends Seeder
             'admin',
             'staff',
             'manager',
-            'supervisor',
         ];
 
         foreach ($roles as $roleName) {
@@ -53,7 +52,7 @@ class RolesSeeder extends Seeder
         $admin = Role::findByName('admin','staff');
         $staff = Role::findByName('staff','staff');
         $manager = Role::findByName('manager','staff');
-        $supervisor = Role::findByName('supervisor','staff');
+
 
         // Admin has all permissions
         $admin->syncPermissions(Permission::all());
@@ -75,15 +74,5 @@ class RolesSeeder extends Seeder
             'manage requests',
         ]);
 
-        // Store Viewer has view-only permissions
-        $supervisor->syncPermissions([
-            'view requests',
-            'view items',
-            'view categories',
-            'view inventory',
-            'view suppliers',
-            'view order limits',
-            'generate reports',
-        ]);
     }
 }

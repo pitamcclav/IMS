@@ -10,12 +10,14 @@ use App\Models\Size;
 use App\Models\Store;
 use App\Models\Supplier;
 use App\Models\Supply;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -23,7 +25,7 @@ class InventoryController extends Controller
 {
     public function index()
     {
-        if(auth()->user()->hasRole('admin')){
+        if(Auth::guard('staff')->user()->hasRole('admin')){
             $inventories = Inventory::with(['item', 'colour', 'size', 'store'])
                 ->paginate(10);
 
@@ -45,8 +47,9 @@ class InventoryController extends Controller
 
     public function create()
     {
-        if(auth()->user()->hasRole('admin')){
+        if(Auth::guard('staff')->user()->hasRole('admin')){
             $items = Item::with('inventory')->get();
+            $categories = Category::all();
         }else{
             $managerId = Auth::guard('staff')->user()->staffId;
 
@@ -56,145 +59,206 @@ class InventoryController extends Controller
             $items = Item::with('inventory')->whereHas('category', function ($query) use ($storeId) {
                 $query->where('storeId', $storeId);
             })->get();
+
+            $categories = Category::where('storeId', $storeId)->get();
         }
         $colours = Colour::all();
         $sizes = Size::all();
         $suppliers = Supplier::all();
-        $categories = Category::all();
+ 
         return view('manager.inventory.create', compact('items', 'colours', 'sizes','suppliers','categories'));
     }
 
     public function store(Request $request)
     {
+        Log::info('Request data: ' . json_encode($request->all()));
+    
         try {
-            // Validate the request data
             $validatedData = $request->validate([
                 'itemid' => 'required|exists:item,itemId',
                 'supplierid' => 'required|exists:supplier,supplierId',
                 'colourIds' => 'required|array',
+                'colourIds.*' => 'exists:colour,colourId',
                 'sizeIds' => 'required|array',
+                'sizeIds.*' => 'exists:size,sizeId',
                 'quantities' => 'required|array',
-                'kartik-input-711.*' => 'file|mimes:jpg,png,jpeg,pdf,docx|max:5000',
+                'quantities.*' => 'integer|min:1',
+                'uploadedFiles' => 'required|array',
+                'uploadedFiles.*' => 'string'
             ]);
-
-            // Find the item and its category to determine the store
-            $item = Item::findOrFail($request->itemid);
-            $category = $item->category;
-            $storeId = $category->storeId;
-
-            \DB::transaction(function () use ($item, $request, $storeId) {
-                for ($i = 0; $i < count($request->colourIds); $i++) {
-                    $inventory = Inventory::where('itemId', $request->itemid)
-                        ->where('colourId', $request->colourIds[$i])
-                        ->where('sizeId', $request->sizeIds[$i])
-                        ->first();
-
-                    if ($inventory) {
-                        // Update existing inventory record
-                        $inventory->quantity += $request->quantities[$i];
-                        $inventory->initialQuantity = $inventory->quantity;
+    
+            $item = Item::findOrFail($validatedData['itemid']);
+            $storeId = $item->category->storeId;
+            $totalQuantity = array_sum($validatedData['quantities']);
+            $uploadedFiles = $validatedData['uploadedFiles'];
+    
+            $result = DB::transaction(function () use ($request, $item, $storeId, $totalQuantity, $uploadedFiles) {
+                $inventoryRecords = [];
+                foreach ($request->colourIds as $index => $colourId) {
+                    $existingInventory = Inventory::where([
+                        'itemId' => $request->itemid,
+                        'colourId' => $colourId,
+                        'sizeId' => $request->sizeIds[$index],
+                        'storeId' => $storeId,
+                    ])->first();
+    
+                    if ($existingInventory) {
+                        $existingInventory->quantity += $request->quantities[$index];
+                        $existingInventory->initialQuantity += $request->quantities[$index];
+                        $existingInventory->save();
+                        $inventoryRecords[] = $existingInventory;
                     } else {
-                        // Create a new inventory record
                         $inventory = Inventory::create([
                             'itemId' => $request->itemid,
-                            'colourId' => $request->colourIds[$i],
-                            'sizeId' => $request->sizeIds[$i],
-                            'quantity' => $request->quantities[$i],
-                            'initialQuantity' => $request->quantities[$i],
+                            'colourId' => $colourId,
+                            'sizeId' => $request->sizeIds[$index],
                             'storeId' => $storeId,
+                            'quantity' => $request->quantities[$index],
+                            'initialQuantity' => $request->quantities[$index],
                         ]);
+                        $inventoryRecords[] = $inventory;
                     }
-
-                    $inventory->save();
                 }
-
-                // Update item quantities
-                $item->initialQuantity += array_sum($request->quantities);
-                $item->quantity += array_sum($request->quantities);
-                $item->save();
+    
+                $item->increment('initialQuantity', $totalQuantity);
+                $item->increment('quantity', $totalQuantity);
+    
+                $processedFiles = [];
+                foreach ($uploadedFiles as $filename) {
+                    $tempPath = 'public/temp/inventory/' . $filename;
+                    if (Storage::exists($tempPath)) {
+                        $extension = pathinfo($filename, PATHINFO_EXTENSION);
+                        $newFilename = Str::uuid() . '.' . $extension;
+                        $newPath = 'public/inventory-images/' . $newFilename;
+                        
+                        Storage::move($tempPath, $newPath);
+                        
+                        $processedFiles[] = [
+                            'id' => Str::uuid(),
+                            'path' => str_replace('public/', '', $newPath),
+                            'original_name' => $filename
+                        ];
+                    }
+                }
+    
+                Supply::create([
+                    'itemId' => $request->itemid,
+                    'supplierId' => $request->supplierid,
+                    'quantity' => $totalQuantity,
+                    'supplyDate' => now(),
+                    'delivery_notes' => json_encode($processedFiles),
+                ]);
+    
+                Storage::deleteDirectory('public/temp/inventory');
+    
+                return [
+                    'success' => true,
+                    'message' => 'Inventory item added successfully',
+                    'redirect' => route('inventory.index')
+                ];
             });
-
-            // Handle file uploads
-            $uploadedFiles = [];
-            if ($request->hasFile('kartik-input-711')) {
-                foreach ($request->file('kartik-input-711') as $file) {
-                    // Generate a unique file ID
-                    $fileId = Str::uuid();
-                    $extension = $file->getClientOriginalExtension();
-                    $path = 'delivery-notes/' . $fileId . '.' . $extension;
-
-                    // Store the file
-                    $file->storeAs('public/delivery-notes', $fileId . '.' . $extension);
-
-                    // Collect file info
-                    $uploadedFiles[] = [
-                        'id' => $fileId,
-                        'path' => $path,
-                        'original_name' => $file->getClientOriginalName()
-                    ];
-                }
-                Log::info('Uploaded files: ' . json_encode($uploadedFiles));
+    
+            // Return JSON for AJAX requests
+            if ($request->wantsJson()) {
+                return response()->json($result);
             }
-
-            // Save the supply details
-            $supply = Supply::create([
-                'itemId' => $request->itemid,
-                'supplierId' => $request->supplierid,
-                'quantity' => array_sum($request->quantities),
-                'supplyDate' => Carbon::now(),
-                'delivery_notes' => json_encode($uploadedFiles), // Store file paths as JSON
-            ]);
-
-            // Flash success message and redirect
+    
+            // Fallback for non-AJAX (web) requests
             Session::flash('success', 'Inventory item added successfully.');
             return redirect()->route('inventory.index');
-
+    
         } catch (ValidationException $e) {
-            // Handle validation errors
-            $errors = $e->validator->errors();
-            Log::error('Validation errors while adding inventory item: ', $errors->toArray());
-            return redirect()->back()->withErrors($errors)->withInput();
-
+            Log::error('Validation error while adding inventory: ' . json_encode($e->errors()));
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
-            // Handle general exceptions
-            Log::error('Error adding inventory item: ' . $e->getMessage());
+            Log::error('Error adding inventory: ' . $e->getMessage());
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'An error occurred while adding the inventory item: ' . $e->getMessage()
+                ], 500);
+            }
             return redirect()->back()->with('error', 'An error occurred while adding the inventory item. Please try again.');
         }
     }
-
-
     public function storeColor(Request $request)
     {
-        if(Colour::where('colourName', $request->colorName)->exists()){
-            return response()->json(['success' => false, 'message' => 'Color already exists']);
-        }
-        else{
+        try {
+            if (!$request->colorName) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Color name is required'
+                ], 422);
+            }
+
+            if (Colour::where('colourName', $request->colorName)->exists()) {
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'Color already exists'
+                ], 422);
+            }
+
             $colour = Colour::create([
                 'colourName' => $request->colorName,
             ]);
 
-            return response()->json(['success' => true, 'colour' => $colour]);
+            return response()->json([
+                'success' => true,
+                'colour' => $colour
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error creating color: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while adding the color'
+            ], 500);
         }
     }
 
     public function storeSize(Request $request)
     {
-        if (Size::where('sizeValue', $request->sizeValue)->exists()){
-            return response()->json(['success' => false, 'message' => 'Size already exists']);
-        }
-        else{
+        try {
+            if (!$request->sizeValue) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Size value is required'
+                ], 422);
+            }
+
+            if (Size::where('sizeValue', $request->sizeValue)->exists()) {
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'Size already exists'
+                ], 422);
+            }
+
             $size = Size::create([
                 'sizeValue' => $request->sizeValue,
             ]);
 
-            return response()->json(['success' => true, 'size' => $size]);
+            return response()->json([
+                'success' => true,
+                'size' => $size
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error creating size: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while adding the size'
+            ], 500);
         }
-
     }
 
     public function edit(Inventory $inventory)
     {
-        if(auth()->user()->hasRole('admin')){
+        if(Auth::guard('staff')->user()->hasRole('admin')){
             $items = Item::with('inventory')->get();
         }else{
             $managerId = Auth::guard('staff')->user()->staffId;
@@ -225,7 +289,7 @@ class InventoryController extends Controller
             ]);
 
             // Use a database transaction to ensure data integrity
-            \DB::transaction(function () use ($request, $inventory) {
+            DB::transaction(function () use ($request, $inventory) {
                 // Update the inventory record
                 $inventory->update([
                     'itemId' => $request->itemid,
@@ -267,5 +331,66 @@ class InventoryController extends Controller
     {
         $inventory = Inventory::find($id);
         $inventory->delete();
-        return response()->json(['success' => true]);}
+        return response()->json(['success' => true]);
+    }
+
+    public function upload(Request $request)
+{
+    Log::info('Upload request received', [
+        'user' => Auth::user(),
+        'headers' => $request->headers->all(),
+        'files' => $request->allFiles(),
+        'input' => $request->all()
+    ]);
+
+    if (!Auth::check()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Unauthorized: Invalid token'
+        ], 401);
+    }
+
+    try {
+        if (!$request->hasFile('image')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No file provided'
+            ], 400);
+        }
+
+        $file = $request->file('image');
+        
+        $validator = Validator::make(['file' => $file], [
+            'file' => 'required|image|mimes:jpeg,png,jpg,gif|max:3072'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()->first()
+            ], 422);
+        }
+
+        $filename = uniqid() . '_' . $file->getClientOriginalName();
+        $path = $file->storeAs('temp/inventory', $filename, 'public');
+
+        if (!$path) {
+            throw new \Exception('Failed to store file on server');
+        }
+
+        // Ensure only JSON is returned
+        return response()->json([
+            'success' => true,
+            'serverId' => $filename,
+            'path' => Storage::url($path)
+        ], 200);
+
+    } catch (\Exception $e) {
+        Log::error('File upload error: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to upload file: ' . $e->getMessage()
+        ], 500);
+    }
+}
 }

@@ -12,7 +12,7 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        if(auth()->user()->hasRole('admin')){
+        if(Auth::guard('staff')->user()->hasRole('admin')){
             $categories = Category::all();
         }
         else{
@@ -32,35 +32,43 @@ class CategoryController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'categoryName' => 'required',
-            'isReturnable' => 'required|boolean',
-        ]);
+        try {
+            $request->validate([
+                'categoryName' => 'required',
+                'isReturnable' => 'required|boolean',
+            ]);
 
-        $categoryData = $request->all();
+            $categoryData = $request->only(['categoryName', 'isReturnable']);
+            $manager = Auth::guard('staff')->user();
+            $store = Store::where('managerId', $manager->staffId)->first();
 
-        // Get the currently authenticated manager
-        $manager = auth()->user();
-        $store = Store::where('managerId', $manager->staffId)->first();
+            if(!$store) {
+                throw new \Exception('You are not assigned to any store.');
+            }
 
-        if($store == null){
-            Session::flash('error', 'You are not assigned to any store.');
-            return redirect()->route('category.index');
-        }
-
-        // Check if the manager is attached to a store
-        if ($manager && $store->storeId) {
-            // Set the store ID of the category to the store ID of the manager
             $categoryData['storeId'] = $store->storeId;
+            $category = Category::create($categoryData);
+
+            if($request->wantsJson()) {
+                return response()->json([
+                    'message' => 'Category created successfully',
+                    'category' => $category
+                ]);
+            }
+
+            Session::flash('success', 'Category created successfully.');
+            return redirect()->route('category.index');
+        } catch (\Exception $e) {
+            if($request->wantsJson()) {
+                return response()->json([
+                    'message' => $e->getMessage()
+                ], 422);
+            }
+
+            Session::flash('error', $e->getMessage());
+            return redirect()->back();
         }
-
-        Category::create($categoryData);
-
-        Session::flash('success', 'Category added successfully.');
-
-        return redirect()->route('category.index');
     }
-
 
     public function edit(Category $category)
     {
@@ -69,22 +77,47 @@ class CategoryController extends Controller
 
     public function update(Request $request, Category $category)
     {
-        $request->validate([
-            'categoryName' => 'required',
-            'isReturnable' => 'required|boolean',
-        ]);
+        try {
+            $request->validate([
+                'categoryName' => 'required',
+                'isReturnable' => 'required|boolean',
+            ]);
 
-        $category->update($request->all());
+            $category->update($request->only(['categoryName', 'isReturnable']));
 
-        Session::flash('success', 'Category updated successfully.');
+            if($request->wantsJson()) {
+                return response()->json([
+                    'message' => 'Category updated successfully',
+                    'category' => $category
+                ]);
+            }
 
-        return redirect()->route('categories.index');
+            Session::flash('success', 'Category updated successfully.');
+            return redirect()->route('category.index');
+        } catch (\Exception $e) {
+            if($request->wantsJson()) {
+                return response()->json([
+                    'message' => $e->getMessage()
+                ], 422);
+            }
+
+            Session::flash('error', $e->getMessage());
+            return redirect()->back();
+        }
     }
 
-    public function destroy($id)
+    public function destroy(Category $category)
     {
-        $category = Category::find($id);
-        $category->delete();
-        return response()->json(['success' => true]);
+        try {
+            $category->delete();
+
+            return response()->json([
+                'message' => 'Category deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error deleting category: ' . $e->getMessage()
+            ], 422);
+        }
     }
 }

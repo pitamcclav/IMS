@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@source "../views";
+
+:root {
+    --font-default: "Open Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    --font-primary: "Roboto", sans-serif;
+    --font-secondary: "Work Sans", sans-serif;
+    --color-primary: #007bff;
+    --color-secondary: #6c757d;
+    --color-success: #28a745;
+    --color-info: #17a2b8;
+    --color-warning: #ffc107;
+    --color-danger: #dc3545;
+    --color-light: #f8f9fa;
+    --color-dark: #343a40;
+    --color-header: #000;
+    --color-accent: #007bff;
+}
+
+@layer base {
+    html {
+        font-family: var(--font-default);
+    }
+}
+
+@layer components {
+    /* Add your custom components here */
+}
+
+@layer utilities {
+    /* Add your custom utilities here */
+}
+.no-transition {
+    transition: none !important;
+}
+[x-cloak] {
+    display: none !important;
+}

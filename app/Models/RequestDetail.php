@@ -24,7 +24,7 @@ class RequestDetail extends Model
         return $this->belongsTo(Item::class, 'itemId');
     }
 
-    public function color()
+    public function colour()
     {
         return $this->belongsTo(Colour::class, 'colourId');
     }

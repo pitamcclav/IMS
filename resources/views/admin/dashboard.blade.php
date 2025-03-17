@@ -3,76 +3,103 @@
 @section('title', 'Admin Dashboard')
 
 @section('content')
-    <div class="container-fluid">
-        <h2>Admin Dashboard</h2>
-        <div class="row">
-            <!-- Users Count -->
-            <div class="col-md-4 mb-4">
-                <div class="card">
-                    <div class="card-header bg-light text-black">
-                        Users
+    <div class="container-fluid" x-data="adminDashboard()" x-init="init" @resize.window="init">
+        <div class="mb-6">
+            <h2 class="text-2xl font-semibold text-gray-800">Admin Dashboard</h2>
+            <p class="mt-2 text-sm text-gray-600">Overview of system statistics and performance</p>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Users Stats -->
+            <div class="bg-white rounded-lg shadow-sm">
+                <div class="px-4 py-3 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-800">Users</h3>
+                </div>
+                <div class="p-4">
+                    <div class="flex items-baseline">
+                        <h5 class="text-2xl font-bold text-gray-800">{{ $usersCount }}</h5>
+                        <p class="ml-2 text-sm text-gray-600">total users</p>
                     </div>
-                    <div class="card-body">
-                        <h5 class="card-title text-black">Total Users: {{ $usersCount }}</h5>
-                        <p class="card-text">View detailed user information.</p>
-                        <a href="{{ route('users.index') }}" class="btn btn-sm btn-primary">View Users</a>
+                    <p class="mt-1 text-sm text-gray-600">{{ $usersData['activeUsers'] }} users currently active</p>
+                    <div class="mt-4">
+                        <a href="{{ route('users.index') }}" 
+                            class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <i class="lni lni-users mr-2"></i>
+                            Manage Users
+                        </a>
                     </div>
                 </div>
             </div>
 
-            <!-- Stores Count -->
-            <div class="col-md-4 mb-4">
-                <div class="card">
-                    <div class="card-header text-black">
-                        Stores
+            <!-- Stores Stats -->
+            <div class="bg-white rounded-lg shadow-sm">
+                <div class="px-4 py-3 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-800">Stores</h3>
+                </div>
+                <div class="p-4">
+                    <div class="flex items-baseline">
+                        <h5 class="text-2xl font-bold text-gray-800">{{ $storesCount }}</h5>
+                        <p class="ml-2 text-sm text-gray-600">total stores</p>
                     </div>
-                    <div class="card-body">
-                        <h5 class="card-title text-black">Total Stores: {{ $storesCount }}</h5>
-                        <p class="card-text">View detailed store information.</p>
-                        <a href="{{ route('stores') }}" class="btn btn-primary btn-sm">View Stores</a>
+                    <p class="mt-1 text-sm text-gray-600">Manage store locations and inventory</p>
+                    <div class="mt-4">
+                        <a href="{{ route('stores') }}" 
+                            class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <i class="lni lni-apartment mr-2"></i>
+                            Manage Stores
+                        </a>
                     </div>
                 </div>
             </div>
 
-            <!-- Items Count -->
-            <div class="col-md-4 mb-4">
-                <div class="card">
-                    <div class="card-header text-black">
-                        Items
+            <!-- Items Stats -->
+            <div class="bg-white rounded-lg shadow-sm">
+                <div class="px-4 py-3 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-800">Items</h3>
+                </div>
+                <div class="p-4">
+                    <div class="flex items-baseline">
+                        <h5 class="text-2xl font-bold text-gray-800">{{ $itemsCount }}</h5>
+                        <p class="ml-2 text-sm text-gray-600">total items</p>
                     </div>
-                    <div class="card-body">
-                        <h5 class="card-title text-black">Total Items: {{ $itemsCount }}</h5>
-                        <p class="card-text">View detailed item information.</p>
-                        <a href="{{ route('item.index') }}" class="btn btn-primary btn-sm">View Items</a>
+                    <p class="mt-1 text-sm text-gray-600">Manage inventory items</p>
+                    <div class="mt-4">
+                        <a href="{{ route('item.index') }}" 
+                            class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <i class="lni lni-grid mr-2"></i>
+                            Manage Items
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="row mt-4">
-            <!-- Users Pie Chart -->
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        Users Distribution
-                    </div>
-                    <div class="card-body">
+        <!-- Charts Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+            <!-- Users Distribution Chart -->
+            <div class="bg-white rounded-lg shadow-sm">
+                <div class="px-4 py-3 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-800">Users Distribution</h3>
+                </div>
+                <div class="p-4">
+                    <div class="h-[300px] relative">
                         <canvas id="usersChart"></canvas>
-                        <script type="application/json" id="usersData">@json($usersData)</script>
                     </div>
+                    <script type="application/json" id="usersData">@json($usersData)</script>
                 </div>
             </div>
 
-            <!-- Items Pie Chart -->
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        Items Distribution
-                    </div>
-                    <div class="card-body">
+            <!-- Items Distribution Chart -->
+            <div class="bg-white rounded-lg shadow-sm">
+                <div class="px-4 py-3 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-800">Items Distribution</h3>
+                </div>
+                <div class="p-4">
+                    <div class="h-[300px] relative">
                         <canvas id="itemsChart"></canvas>
-                        <script type="application/json" id="itemsData">@json($itemsData)</script>
                     </div>
+                    <script type="application/json" id="itemsData">@json($itemsData)</script>
                 </div>
             </div>
         </div>
@@ -80,5 +107,5 @@
 @endsection
 
 @section('scripts')
-    <script src="{{ asset('js/admin_dashboard.js') }}"></script>
+    <script src="{{ asset('js/app.js') }}"></script>
 @endsection

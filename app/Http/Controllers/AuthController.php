@@ -20,6 +20,8 @@ class AuthController extends Controller
             $request->session()->regenerate();
 
             $user = Auth::guard('staff')->user();
+            $token = $user->createToken('inventory-upload')->plainTextToken;
+            Session::put('api_token', $token); // Store token in session
 
             if ($user->hasRole('admin')) {
                 Session::flash('success', 'You are logged in successfully');
@@ -46,11 +48,18 @@ class AuthController extends Controller
 
     public function logout(Request $request): RedirectResponse
     {
+        $user = Auth::guard('staff')->user();
+        if ($user) {
+            $user->tokens()->delete(); // Revoke all tokens
+        }
         Auth::guard('staff')->logout();
 
         $request->session()->invalidate();
 
         $request->session()->regenerateToken();
+
+        
+        Session::forget('api_token');
 
         return redirect('/');
     }

@@ -12,11 +12,11 @@ class Store extends Model
     protected $table = 'store';
 
     protected $primaryKey = 'storeId';
-    protected $fillable = ['storeName', 'location', 'staffId'];
+    protected $fillable = ['storeName', 'location', 'managerId'];
 
     public function manager()
     {
-        return $this->belongsTo(Staff::class, 'managerId',"staffId");
+        return $this->belongsTo(Staff::class, 'managerId', 'staffId');
     }
 
     public function inventory()

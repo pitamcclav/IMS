@@ -11,8 +11,6 @@ use App\Http\Controllers\OrderLimitController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RequestController;
 use App\Http\Controllers\SupplierController;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
 
 //Auth routes
@@ -27,11 +25,10 @@ Route::middleware(['auth:staff'])->group(function () {
 
     //Common routes
     Route::resource('requests', RequestController::class);
-    //Fetch colours and sizes
-    Route::get('/fetch-colours/{itemId}', [RequestController::class, 'fetchColours']);
-    Route::get('/fetch-sizes/{itemId}/{colourId}', [RequestController::class, 'fetchSizes']);
+    //Fetch items and variants
     Route::get('/fetch-items/{storeId}', [RequestController::class, 'fetchItems']);
-
+    Route::get('/api/items/{itemId}/colours', [RequestController::class, 'fetchColours']);
+    Route::get('/api/items/{itemId}/colours/{colourId}/sizes', [RequestController::class, 'fetchSizes']);
 
     //Admin specific routes
     Route::middleware(['role:admin'])->group(function () {
@@ -74,6 +71,9 @@ Route::middleware(['auth:staff'])->group(function () {
         //Store colours and sizes
         Route::post('/api/colour', [InventoryController::class, 'storeColor']);
         Route::post('/api/size', [InventoryController::class, 'storeSize']);
+        Route::post('/api/supplier', [SupplierController::class, 'store']);
+        Route::post('/api/item', [ItemController::class, 'store']);
+        
 
 
     });

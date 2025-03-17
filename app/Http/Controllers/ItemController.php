@@ -60,39 +60,43 @@ class ItemController extends Controller
             // Create a new Item instance and save it to the database
             $item = Item::create($validatedData);
 
-            // Optional: Handle inventory adjustments if applicable
-            // (e.g., initialize inventory with default quantities)
-
-            if ($request->ajax()) {
-                return response()->json(['success' => true, 'item' => $item]);
+            // Always return JSON for API routes
+            if (str_starts_with($request->path(), 'api/')) {
+                return response()->json([
+                    'success' => true,
+                    'item' => $item
+                ]);
             }
 
-            return redirect()->route('item.index')->with('success', 'Item added successfully.');
+            // Return HTML response for web routes
+            return redirect()->route('item.index')
+                ->with('success', 'Item added successfully.');
 
         } catch (ValidationException $e) {
-            // Capture and log validation errors
-            $errors = $e->validator->errors();
-            Log::error('Validation errors while creating item: ', $errors->toArray());
-
-            // Return JSON response for AJAX requests
-            if ($request->ajax()) {
-                return response()->json(['success' => false, 'errors' => $errors->toArray()]);
+            if (str_starts_with($request->path(), 'api/')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $e->validator->errors()
+                ], 422);
             }
 
-            // Redirect back with validation errors
-            return redirect()->back()->withErrors($errors)->withInput();
+            return redirect()->back()
+                ->withErrors($e->validator)
+                ->withInput();
 
         } catch (\Exception $e) {
-            // Capture and log general errors
             Log::error('Error creating item: ' . $e->getMessage());
-
-            // Return JSON response for AJAX requests
-            if ($request->ajax()) {
-                return response()->json(['success' => false, 'error' => 'An error occurred while creating the item. Please try again.']);
+            
+            if (str_starts_with($request->path(), 'api/')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'An error occurred while adding the item.'
+                ], 500);
             }
 
-            // Redirect back with error message
-            return redirect()->back()->with('error', 'An error occurred while creating the item. Please try again.');
+            return redirect()->back()
+                ->with('error', 'An error occurred while adding the item. Please try again.');
         }
     }
 

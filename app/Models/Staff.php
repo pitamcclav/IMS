@@ -6,18 +6,20 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
+use Laravel\Sanctum\HasApiTokens;
 
 class Staff extends Authenticatable
 {
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, Notifiable, HasRoles, HasApiTokens;
+    
     protected $guard_name = 'staff';
     protected $table = 'staff';
     protected $primaryKey = 'staffId';
     protected $fillable = ['staffName', 'role', 'email', 'password'];
 
-    public function stores()
+    public function managedStore()
     {
-        return $this->hasMany(Store::class, 'staffId');
+        return $this->hasOne(Store::class, 'managerId', 'staffId');
     }
 
     public function requests()
